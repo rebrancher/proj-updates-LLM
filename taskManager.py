@@ -77,9 +77,25 @@ class TaskManager:
             print(f"Date: {update[0]} -- Time: {update[1]}")
             print("----------------------------------------")
             print(f"Update: {update[2]}\n")
-            
         print("====================================\n")
-        input("Press any key to continue...")
+
+
+        while True:
+            print("Options:")
+            print("1. Add new update")
+            print("2. Go back to main menu")
+            option = input("Choose your option: ")
+
+            if option == '1':
+                update_text = input("Enter your task update (max 300 chars): ")
+                self.add_task_update(task_id, update_text)
+                # Refresh task updates view after adding new update
+                self.get_task_updates(task_id, task_name)
+            elif option == '2':
+                break
+            else:
+                print("Invalid option, try again.")
+
 
 def run_cli():
     taskManager = TaskManager()
