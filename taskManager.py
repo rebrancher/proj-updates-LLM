@@ -91,9 +91,7 @@ class TaskManager:
                 time, text = update
                 print(f"{time} -- Update: {text}\n")
         print("====================================\n")
-
-
-
+        
         while True:
             print("Options:")
             print("1. Add new update")
