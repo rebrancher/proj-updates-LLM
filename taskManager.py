@@ -72,12 +72,26 @@ class TaskManager:
             ORDER BY update_date ASC, update_time ASC;
         """, (task_id,))
         updates = self.cursor.fetchall()
-        print(f"\nTask Updates for {task_name}\n------------")
+        
+        # Group updates by date
+        updates_by_date = {}
         for update in updates:
-            print(f"Date: {update[0]} -- Time: {update[1]}")
-            print("----------------------------------------")
-            print(f"Update: {update[2]}\n")
+            date, time, text = update
+            if date in updates_by_date:
+                updates_by_date[date].append((time, text))
+            else:
+                updates_by_date[date] = [(time, text)]
+        
+        # Display updates
+        print(f"\nTask Updates for {task_name}\n------------")
+        for date, updates_on_date in updates_by_date.items():
+            print(f"\nDate: {date}")
+            print("----------------")
+            for update in updates_on_date:
+                time, text = update
+                print(f"{time} -- Update: {text}\n")
         print("====================================\n")
+
 
 
         while True:
