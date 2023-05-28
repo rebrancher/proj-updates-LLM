@@ -77,6 +77,7 @@ class TaskManager:
             print(f"Date: {update[0]} -- Time: {update[1]}")
             print("----------------------------------------")
             print(f"Update: {update[2]}\n")
+            
         print("====================================\n")
         input("Press any key to continue...")
 
