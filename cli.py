@@ -9,9 +9,10 @@ class CLI:
         while True:
             print("\nWelcome to the task manager, select from the menu below:\n")
             print("1. Create Master Task")
-            print("2. Add Task Update")
-            print("3. View Task Updates")
-            print("4. Exit\n")
+            print("2. List Master Tasks")
+            print("3. Add Task Update")
+            print("4. View Task Updates")
+            print("5. Exit\n")
             choice = input("Enter your choice: ")
 
             if choice == '1':
@@ -19,15 +20,18 @@ class CLI:
                 self.master_db.create_task(task_name)
 
             elif choice == '2':
+                self.list_master_tasks()
+
+            elif choice == '3':
                 task_id, _ = self.select_master_task()  # we don't care about task_name here
                 update_text = input("\nEnter your task update (max 300 chars): ")
                 self.updates_db.add_update(task_id, update_text)
 
-            elif choice == '3':
+            elif choice == '4':
                 task_id, task_name = self.select_master_task()
                 self.get_task_updates(task_id, task_name)
 
-            elif choice == '4':
+            elif choice == '5':
                 print("\nExiting...\n")
                 break
 
