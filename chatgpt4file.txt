@@ -1,0 +1,303 @@
+from rich.console import Console
+from taskManager import TaskManager
+
+class CLI:
+    def __init__(self, task_manager):
+        self.task_manager = task_manager
+        self.console = Console()
+
+    def run_cli(self):
+        while True:
+            self.console.print("\nWelcome to the task manager, select from the menu below:\n", style="bold blue")
+            self.console.print("1. Create Master Task")
+            self.console.print("2. List Master Tasks")
+            self.console.print("3. Add Task Update")
+            self.console.print("4. View Task Updates")
+            self.console.print("5. Add Highlight to a Task")
+            self.console.print("6. View Task Highlights")
+            self.console.print("7. Exit\n", style="bold red")
+            choice = input("Enter your choice: ")
+
+            if choice == '1':
+                task_name = input("\nEnter the name of the new Master Task, press c to cancel: ")
+                if task_name == "c":
+                    continue
+                self.task_manager.create_master_task(task_name)
+
+            elif choice == '2':
+                self.task_manager.list_master_tasks()
+
+            elif choice == '3':
+                master_task_id, _ = self.task_manager.select_master_task()
+                if master_task_id:
+                    self.task_manager.add_task_update(master_task_id)
+
+            elif choice == '4':
+                master_task_id, task_name = self.task_manager.select_master_task()
+                if master_task_id:
+                    self.task_manager.list_updates(master_task_id)
+
+            elif choice == '5':
+                master_task_id, _ = self.task_manager.select_master_task()
+                if master_task_id:
+                    updates = self.task_manager.list_updates(master_task_id)
+                    highlight_text = input("\nEnter the text for your highlight: ")
+                    highlight_color = input("\nEnter the color for your highlight: ")
+                    self.task_manager.add_highlight(master_task_id, highlight_text, highlight_color)
+
+            elif choice == '6':
+                master_task_id, task_name = self.task_manager.select_master_task()
+                if master_task_id:
+                    self.task_manager.get_highlights(master_task_id)
+
+            elif choice == '7':
+                print("\nExiting...\n")
+                break
+
+            else:
+                print("\nInvalid choice. Please enter a number between 1 and 7.\n")
+
+
+if __name__ == "__main__":
+    task_manager = TaskManager('task.db')
+    cli = CLI(task_manager)
+    cli.run_cli()
+import sqlite3
+from datetime import datetime
+
+class Database:
+    def __init__(self, db_name):
+        self.conn = sqlite3.connect(db_name)
+        self.cursor = self.conn.cursor()
+
+    def view_table(self, table_name):
+        c = self.cursor.execute(f"SELECT * FROM {table_name}")
+        for row in c.fetchall(): 
+            print(row)
+        #return self.cursor.fetchall()
+
+class MasterTaskDB(Database):
+    def __init__(self, db_name):
+        super().__init__(db_name)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS master_tasks(
+                task_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_name TEXT NOT NULL
+            );
+        """)
+
+    def create_task(self, task_name):
+        self.cursor.execute("""
+            INSERT INTO master_tasks (task_name) VALUES (?);
+        """, (task_name,))
+        self.conn.commit()
+
+    def list_master_tasks(self):
+        self.cursor.execute("""
+            SELECT * FROM master_tasks;
+        """)
+        return self.cursor.fetchall()
+    
+    def view_table(self):
+        print("master_tasks")
+        return super().view_table("master_tasks")
+        
+
+class TaskUpdateDB(Database):
+    def __init__(self, db_name):
+        super().__init__(db_name)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS task_updates(
+                update_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_id INTEGER,
+                update_date TEXT NOT NULL,
+                update_time TEXT NOT NULL,
+                update_text TEXT NOT NULL,
+                highlight TEXT,
+                FOREIGN KEY (task_id) REFERENCES master_tasks (task_id)
+            );
+        """)
+
+    def add_update(self, task_id, update_text, highlight=None):
+        date_str = datetime.now().strftime("%m-%d-%Y")
+        time_str = datetime.now().strftime("%H:%M:%S")
+        self.cursor.execute("""
+            INSERT INTO task_updates (task_id, update_date, update_time, update_text, highlight) 
+            VALUES (?, ?, ?, ?, ?);
+        """, (task_id, date_str, time_str, update_text, highlight))
+        self.conn.commit()
+
+    def get_updates(self, master_task_id):
+        self.cursor.execute("""
+            SELECT update_date, update_time, update_text, highlight FROM task_updates 
+            WHERE task_id = ? 
+            ORDER BY update_date ASC, update_time ASC;
+        """, (master_task_id,))
+        return self.cursor.fetchall()
+    
+    def view_table(self):
+        print("task_updates")
+        return super().view_table("task_updates")
+    
+    # TaskHighlightDB inherits from the Database class.
+class TaskHighlightDB(Database):
+    def __init__(self, db_name):
+        super().__init__(db_name)
+        # SQL command to create a new table "task_highlights" in the database,
+        # if it does not already exist.
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS task_highlights(
+                highlight_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_id INTEGER,
+                highlight_text TEXT NOT NULL,
+                highlight_color TEXT NOT NULL,
+                FOREIGN KEY (task_id) REFERENCES master_tasks (task_id)
+            );
+        """)
+
+    # Function to add a new highlight to the database.
+    def add_highlight(self, task_id, highlight_text, highlight_color):
+        self.cursor.execute("""
+            INSERT INTO task_highlights (task_id, highlight_text, highlight_color) 
+            VALUES (?, ?, ?);
+        """, (task_id, highlight_text, highlight_color))
+        self.conn.commit()  # Save the changes to the database.
+
+    # Function to fetch all highlights associated with a particular task from the database.
+    def get_highlights(self, task_id):
+        self.cursor.execute("""
+            SELECT highlight_text, highlight_color FROM task_highlights 
+            WHERE task_id = ?;
+        """, (task_id,))
+        return self.cursor.fetchall()  # Return all rows fetched from the database.
+    
+    def view_table(self):
+        print("task_highlights")
+        return super().view_table("task_highlights")
+
+
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
+from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB
+
+class TaskManager:
+    def __init__(self, db_name):
+        self.master_db = MasterTaskDB(db_name)
+        self.updates_db = TaskUpdateDB(db_name)
+        self.highlights_db = TaskHighlightDB(db_name)
+        self.console = Console()
+
+# Master Task Code
+
+    def create_master_task(self, task_name):
+        self.master_db.create_task(task_name)
+
+    def list_master_tasks(self):
+        tasks = self.master_db.list_master_tasks()
+
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Index", style="dim", width=12)
+        table.add_column("Master Task", style="dim", width=20)
+
+        for i, task in enumerate(tasks, start=1):
+            table.add_row(str(i), task[1])
+
+        self.console.print(table)
+
+    def select_master_task(self):
+        self.list_master_tasks()
+        while True:
+            try:
+                task_index = int(input("Please enter the number of the Master Task you want to select: "))
+                tasks = self.master_db.list_master_tasks()
+                if 1 <= task_index <= len(tasks):
+                    selected_task = tasks[task_index - 1]
+                    return selected_task[0], selected_task[1]
+                else:
+                    print("\nInvalid selection.")
+            except ValueError:
+                print("\nInvalid input, please enter a number.")
+
+# Updates Code
+
+    def add_task_update(self, master_task_id):
+        
+        update_text = input("Enter your task update (max 300 chars): ")
+        print("")
+        self.updates_db.add_update(master_task_id, update_text, highlight=None)
+        print("Task successfully added\n")
+
+        self.menu_add_update(master_task_id)
+
+
+    def list_updates(self, master_task_id):
+        updates = self.updates_db.get_updates(master_task_id)
+        
+        # Group updates by date
+        updates_by_date = {}
+        for update in updates:
+            date, time, text, highlight = update
+            if date in updates_by_date:
+                updates_by_date[date].append((time, text, highlight))
+            else:
+                updates_by_date[date] = [(time, text, highlight)]
+
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Date", style="dim", width=12)
+        table.add_column("Time", style="dim", width=12)
+        table.add_column("Update", style="dim", width=60)
+
+        # Display updates
+        for date, updates_on_date in updates_by_date.items():
+            for update in updates_on_date:
+                time, text, highlight = update
+                if highlight:
+                    text = Text(f"{text}", style='blue')
+                table.add_row(date, time, text)
+                
+        self.console.print(table)
+
+    def menu_add_update(self, master_task_id):
+
+
+
+        ##this part you have to figure out how to get menus out of the function codes
+
+        print("Options:")
+        print("1. Add new update")
+        print("2. Go back to main menu \n")
+        option = input("Choose your option: ")
+
+        if option == '1':
+            self.add_task_update(master_task_id)
+
+        elif option == '2':
+            return
+
+
+
+    def select_update(self):
+        self.list_updates()
+        while True:
+            try:
+                task_index = int(input("Please enter the number of the update you want to select: "))
+                tasks = self.updates_db.list_updates()
+                if 1 <= task_index <= len(tasks):
+                    selected_task = tasks[task_index - 1]
+                    return selected_task[0], selected_task[1]
+                else:
+                    print("\nInvalid selection.")
+            except ValueError:
+                print("\nInvalid input, please enter a number.")
+
+   
+#Highlights Code
+
+    # Function to add a new highlight to a task.
+    def add_highlight(self, task_id, highlight_text, highlight_color):
+        self.highlights_db.add_highlight(task_id, highlight_text, highlight_color)
+
+    # Function to fetch all highlights of a particular task.
+    def get_highlights(self, task_id):
+        return self.highlights_db.get_highlights(task_id)
