@@ -17,7 +17,6 @@ class TaskManager:
 
     def list_master_tasks(self):
         tasks = self.master_db.list_master_tasks()
-
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Index", style="dim", width=12)
         table.add_column("Master Task", style="dim", width=20)
@@ -28,6 +27,7 @@ class TaskManager:
         self.console.print(table)
 
     def select_master_task(self):
+        #work around this task, should you always print master tasks?
         self.list_master_tasks()
         while True:
             try:
@@ -48,28 +48,14 @@ class TaskManager:
         update_text = input("Enter your task update (max 300 chars): ")
         print("")
         self.updates_db.add_update(master_task_id, update_text, highlight=None)
-        print("Task successfully added\n")
+        print("Update successfully added\n")
 
+        #optionality to include another update
         self.menu_add_update(master_task_id)
 
-    # def select_update(self, master_task_id = None):
-    #     if not master_task_id:
-    #         master_task_id = self.select_master_task()
-    #     else:
-    #         self.list_updates(self, master_task_id)
-    #         while True:
-    #             try:
-    #                 update_index = int(input("Please enter the number of the Update you want to select: ")) 
-    #                 updates = self.updates_db.get_updates()
-    #                 if 1 <= update_index <= len(updates):
-    #                     selected_update = updates[update_index - 1]
-    #                     return selected_update[0], selected_update[1]
-    #                 else:
-    #                     print("\n Invalid selection.")
-    #             except ValueError:
-    #                 print("Invalid input, please enter a number")
 
     def select_update(self, master_task_id):
+        #same problem as select master_task, should you just have the menu up every time?
         self.list_updates(master_task_id)
         while True:
             try:
@@ -77,6 +63,8 @@ class TaskManager:
                 tasks = self.updates_db.get_updates(master_task_id)
                 if 1 <= task_index <= len(tasks):
                     selected_task = tasks[task_index - 1]
+
+                    #what are you returning here?
                     return selected_task[0], selected_task[1]
                 else:
                     print("\nInvalid selection.")
@@ -103,14 +91,13 @@ class TaskManager:
 
         # Display updates
         for date, updates_on_date in updates_by_date.items():
+            table.add_row(date, "", "")  # Add a row for the date
             for update in updates_on_date:
                 time, text, highlight = update
                 if highlight:
-                    rich_text = Text()
-                    rich_text.append(f"{text}", style="blue")
-                    print(rich_text)
+                    rich_text = Text.from_markup(f"[{highlight}]{text}[/]")
                     text = rich_text
-                table.add_row(date, time, text)
+                table.add_row("", time, text)
                 
         self.console.print(table)
 
@@ -128,13 +115,7 @@ class TaskManager:
         elif option == '2':
             return
 
-
-
-    
-
-   
 #Highlights Code
-
     # Function to add a new highlight to a task.
     def add_highlight(self):
         master_task_id, _ = self.select_master_task()

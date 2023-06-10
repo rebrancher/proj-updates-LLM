@@ -63,6 +63,7 @@ class TaskUpdateDB(Database):
         """, (task_id, date_str, time_str, update_text, highlight))
         self.conn.commit()
 
+    #change this to list_updates
     def get_updates(self, master_task_id):
         self.cursor.execute("""
             SELECT update_id, task_id, update_date, update_time, update_text, highlight FROM task_updates 
@@ -77,13 +78,15 @@ class TaskUpdateDB(Database):
             SET highlight = ?
             where update_id = ?;
         """, (highlight, task_id))
-
+        self.conn.commit()
     
     def view_table(self):
         print("task_updates")
         return super().view_table("task_updates")
     
     # TaskHighlightDB inherits from the Database class.
+
+    #not sure if this is ever used or is necessary
 class TaskHighlightDB(Database):
     def __init__(self, db_name):
         super().__init__(db_name)

@@ -2,11 +2,16 @@ from rich.console import Console
 from taskManager import TaskManager
 
 class CLI:
+    #init, starts a task_manager instance and a console class?
     def __init__(self, task_manager):
         self.task_manager = task_manager
         self.console = Console()
 
     def run_cli(self):
+
+        #Main menu, should see if its worth creating a menu type object taht can just
+        #take in inputs 
+
         while True:
             self.console.print("\nWelcome to the task manager, select from the menu below:\n", style="bold blue")
             self.console.print("1. Create Master Task")
@@ -18,33 +23,54 @@ class CLI:
             self.console.print("7. Exit\n", style="bold red")
             choice = input("Enter your choice: ")
 
+            #Create Master Task
             if choice == '1':
                 task_name = input("\nEnter the name of the new Master Task, press c to cancel: ")
+                #cancelling
                 if task_name == "c":
                     continue
+
+                """
+                    This goes to the task_manager which then points to the
+                    DB function, is this the best way to go about this?
+                """
                 self.task_manager.create_master_task(task_name)
 
+            #List Master Tasks - Pretty straightforward print
             elif choice == '2':
                 self.task_manager.list_master_tasks()
 
+            #Add Task Update
             elif choice == '3':
+                """
+                    select_master_task needs better rework, it should not have
+                    list_master_tasks inside, this should be called within this
+                    choice. Additionally, the input should be passed in. We need
+                    to limit the scope of this function
+                """
+
                 master_task_id, _ = self.task_manager.select_master_task()
                 if master_task_id:
+                    #this one is fine, just clean it up
                     self.task_manager.add_task_update(master_task_id)
 
+            #View task updates
             elif choice == '4':
                 master_task_id, task_name = self.task_manager.select_master_task()
                 if master_task_id:
                     self.task_manager.list_updates(master_task_id)
 
+            #Add highlight to a task
             elif choice == '5':
                 self.task_manager.add_highlight()
 
+            #View task highlights
             elif choice == '6':
                 master_task_id, task_name = self.task_manager.select_master_task()
                 if master_task_id:
                     self.task_manager.get_highlights(master_task_id)
 
+            #exit
             elif choice == '7':
                 print("\nExiting...\n")
                 break
