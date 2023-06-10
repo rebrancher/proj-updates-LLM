@@ -326,14 +326,44 @@ class TaskManager:
             return
 
 #Highlights Code
-    # Function to add a new highlight to a task.
     def add_highlight(self):
         master_task_id, _ = self.select_master_task()
         index, text = self.select_update(master_task_id)
+        
+        colors = [
+            "black",
+            "red",
+            "green",
+            "yellow",
+            "blue",
+            "magenta",
+            "cyan",
+            "white",
+            "bright_black",
+            "bright_red",
+            "bright_green",
+            "bright_yellow",
+            "bright_blue",
+            "bright_magenta",
+            "bright_cyan",
+            "bright_white"
+        ]
+
+        # Print all color names.
+        print("\nPossible colors for highlighting are:")
+        for color in colors:
+            print(color)
+        
         highlight_color = input("\nEnter the color for your highlight: ")
+        
+        if highlight_color not in colors:
+            print("Invalid color. Please try again with a valid color.")
+            return
+        
         print(index, master_task_id, highlight_color)
         self.updates_db.add_highlight_to_update(index, highlight_color)
 
     # Function to fetch all highlights of a particular task.
     def get_highlights(self, task_id):
         return self.highlights_db.get_highlights(task_id)
+

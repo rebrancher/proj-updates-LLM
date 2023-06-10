@@ -18,11 +18,11 @@ class TaskManager:
     def list_master_tasks(self):
         tasks = self.master_db.list_master_tasks()
         table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Index", style="dim", width=12)
+        table.add_column("Task ID", style="dim", width=12)
         table.add_column("Master Task", style="dim", width=20)
 
         for i, task in enumerate(tasks, start=1):
-            table.add_row(str(i), task[1])
+            table.add_row(str(task[0]), task[1])
 
         self.console.print(table)
 
@@ -85,21 +85,25 @@ class TaskManager:
                 updates_by_date[date] = [(time, text, highlight)]
 
         table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Index", style="dim", width=6)
         table.add_column("Date", style="dim", width=12)
         table.add_column("Time", style="dim", width=12)
         table.add_column("Update", style="dim", width=60)
 
         # Display updates
+        index = 1
         for date, updates_on_date in updates_by_date.items():
-            table.add_row(date, "", "")  # Add a row for the date
+            table.add_row("--", date, "--------", "--------")  # Add a row for the date
             for update in updates_on_date:
                 time, text, highlight = update
                 if highlight:
                     rich_text = Text.from_markup(f"[{highlight}]{text}[/]")
                     text = rich_text
-                table.add_row("", time, text)
+                table.add_row(str(index), "     |     ", time, text)
+                index += 1
                 
         self.console.print(table)
+
 
     def menu_add_update(self, master_task_id):
         ##this part you have to figure out how to get menus out of the function codes
@@ -116,14 +120,44 @@ class TaskManager:
             return
 
 #Highlights Code
-    # Function to add a new highlight to a task.
     def add_highlight(self):
         master_task_id, _ = self.select_master_task()
         index, text = self.select_update(master_task_id)
+        
+        colors = [
+            "black",
+            "red",
+            "green",
+            "yellow",
+            "blue",
+            "magenta",
+            "cyan",
+            "white",
+            "bright_black",
+            "bright_red",
+            "bright_green",
+            "bright_yellow",
+            "bright_blue",
+            "bright_magenta",
+            "bright_cyan",
+            "bright_white"
+        ]
+
+        # Print all color names.
+        print("\nPossible colors for highlighting are:")
+        for color in colors:
+            print(color)
+        
         highlight_color = input("\nEnter the color for your highlight: ")
+        
+        if highlight_color not in colors:
+            print("Invalid color. Please try again with a valid color.")
+            return
+        
         print(index, master_task_id, highlight_color)
         self.updates_db.add_highlight_to_update(index, highlight_color)
 
     # Function to fetch all highlights of a particular task.
     def get_highlights(self, task_id):
         return self.highlights_db.get_highlights(task_id)
+
