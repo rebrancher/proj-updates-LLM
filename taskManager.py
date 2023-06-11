@@ -21,7 +21,7 @@ class TaskManager:
         table.add_column("Task ID", style="dim", width=12)
         table.add_column("Master Task", style="dim", width=20)
 
-        for i, task in enumerate(tasks, start=1):
+        for task in tasks:
             table.add_row(str(task[0]), task[1])
 
         self.console.print(table)
@@ -160,4 +160,10 @@ class TaskManager:
     # Function to fetch all highlights of a particular task.
     def get_highlights(self, task_id):
         return self.highlights_db.get_highlights(task_id)
+    
+    def delete_master_task(self, task_id):
+        self.master_db.delete_task(task_id)
+
+    def delete_task_update(self, update_id):
+        self.updates_db.delete_update(update_id)
 

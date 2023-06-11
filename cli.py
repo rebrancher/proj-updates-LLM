@@ -20,7 +20,9 @@ class CLI:
             self.console.print("4. View Task Updates")
             self.console.print("5. Add Highlight to a Task")
             self.console.print("6. View Task Highlights")
-            self.console.print("7. Exit\n", style="bold red")
+            self.console.print("8. Delete Master Task")
+            self.console.print("9. Delete Task Update")
+            self.console.print("10. Exit\n", style="bold red")
             choice = input("Enter your choice: ")
 
             #Create Master Task
@@ -70,13 +72,30 @@ class CLI:
                 if master_task_id:
                     self.task_manager.get_highlights(master_task_id)
 
+            #Delete Master Task
+            elif choice == '8':
+                task_id, _ = self.task_manager.select_master_task()
+                confirmation = input("Are you sure you want to delete this Master Task? y/n: ")
+                if confirmation.lower() == 'y':
+                    self.task_manager.delete_master_task(task_id)
+                else:
+                    continue
+            #Delete Task Update
+            elif choice == '9':
+                master_task_id, _ = self.task_manager.select_master_task()
+                if master_task_id:
+                    update_id, _ = self.task_manager.select_update(master_task_id)
+                    confirmation = input("Are you sure you want to delete this Task Update? y/n: ")
+                    if confirmation.lower() == 'y':
+                        self.task_manager.delete_task_update(update_id)
+                    else:
+                        continue
             #exit
-            elif choice == '7':
+            elif choice == '10':
                 print("\nExiting...\n")
                 break
-
             else:
-                print("\nInvalid choice. Please enter a number between 1 and 7.\n")
+                print("\nInvalid choice. Please enter a number between 1 and 10.\n")
 
 
 if __name__ == "__main__":

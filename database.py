@@ -37,6 +37,14 @@ class MasterTaskDB(Database):
     def view_table(self):
         print("master_tasks")
         return super().view_table("master_tasks")
+    
+    def delete_task(self, task_id):
+        self.cursor.execute("""
+            DELETE FROM master_tasks WHERE task_id = ?;
+        """, (task_id,))
+        self.conn.commit()
+    
+    
         
 
 class TaskUpdateDB(Database):
@@ -83,6 +91,12 @@ class TaskUpdateDB(Database):
     def view_table(self):
         print("task_updates")
         return super().view_table("task_updates")
+    
+    def delete_update(self, update_id):
+        self.cursor.execute("""
+            DELETE FROM task_updates WHERE update_id = ?;
+        """, (update_id,))
+        self.conn.commit()
     
     # TaskHighlightDB inherits from the Database class.
 
