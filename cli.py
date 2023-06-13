@@ -15,15 +15,15 @@ class CLI:
         while True:
             self.console.print("\nWelcome to the task manager, select from the menu below:\n", style="bold blue")
             self.console.print("1. Create Master Task")
-            self.console.print("2. List Master Tasks")
-            self.console.print("3. Add Task Update")
-            self.console.print("4. View Task Updates")
+            self.console.print("2. List Master Tasks\n")
+            self.console.print("3. Create Task Update")
+            self.console.print("4. View Task Updates\n")
             self.console.print("5. Add Highlight to a Task")
-            self.console.print("6. View Task Highlights")
+            self.console.print("6. View Task Highlights\n")
             self.console.print("8. Delete Master Task")
-            self.console.print("9. Delete Task Update")
+            self.console.print("9. Delete Task Update\n")
             self.console.print("10. Exit\n", style="bold red")
-            choice = input("Enter your choice: ")
+            choice = input("Select option by inputting corresponding #: ")
 
             #Create Master Task
             if choice == '1':
@@ -54,6 +54,7 @@ class CLI:
                 master_task_id, _ = self.task_manager.select_master_task()
                 if master_task_id:
                     #this one is fine, just clean it up
+                    self.task_manager.list_updates(master_task_id)
                     self.task_manager.add_task_update(master_task_id)
 
             #View task updates

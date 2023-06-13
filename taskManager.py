@@ -1,6 +1,7 @@
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
+from rich.align import Align
 from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB
 
 class TaskManager:
@@ -18,11 +19,11 @@ class TaskManager:
     def list_master_tasks(self):
         tasks = self.master_db.list_master_tasks()
         table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Task ID", style="dim", width=12)
+        table.add_column("Task ID", style="dim", width=8)
         table.add_column("Master Task", style="dim", width=20)
 
         for task in tasks:
-            table.add_row(str(task[0]), task[1])
+            table.add_row(Align.center(str(task[0])), task[1])
 
         self.console.print(table)
 
@@ -107,7 +108,7 @@ class TaskManager:
 
     def menu_add_update(self, master_task_id):
         ##this part you have to figure out how to get menus out of the function codes
-
+        self.list_updates_(master_task_id)
         print("Options:")
         print("1. Add new update")
         print("2. Go back to main menu \n")
