@@ -8,11 +8,11 @@ class CLI:
         self.console = Console()
 
     def run_cli(self):
-
         #Main menu, should see if its worth creating a menu type object taht can just
         #take in inputs 
 
         while True:
+            self.task_manager.clear_screen()
             self.console.print("\nWelcome to the task manager, select from the menu below:\n", style="bold blue")
             self.console.print("1. Create Master Task")
             self.console.print("2. List Master Tasks\n")
@@ -27,6 +27,9 @@ class CLI:
 
             #Create Master Task
             if choice == '1':
+                self.task_manager.clear_screen()
+                print("Current Master Tasks:\n")
+                self.task_manager.list_master_tasks()
                 task_name = input("\nEnter the name of the new Master Task, press c to cancel: ")
                 #cancelling
                 if task_name == "c":
@@ -40,20 +43,17 @@ class CLI:
 
             #List Master Tasks - Pretty straightforward print
             elif choice == '2':
+                self.task_manager.clear_screen()
                 self.task_manager.list_master_tasks()
+                input("Press any key to continue...")
+                self.task_manager.clear_screen()
 
             #Add Task Update
             elif choice == '3':
-                """
-                    select_master_task needs better rework, it should not have
-                    list_master_tasks inside, this should be called within this
-                    choice. Additionally, the input should be passed in. We need
-                    to limit the scope of this function
-                """
 
+                self.task_manager.clear_screen()
                 master_task_id, _ = self.task_manager.select_master_task()
                 if master_task_id:
-                    #this one is fine, just clean it up
                     self.task_manager.list_updates(master_task_id)
                     self.task_manager.add_task_update(master_task_id)
 
@@ -62,6 +62,7 @@ class CLI:
                 master_task_id, task_name = self.task_manager.select_master_task()
                 if master_task_id:
                     self.task_manager.list_updates(master_task_id)
+                input("Press any key to continue...")
 
             #Add highlight to a task
             elif choice == '5':
