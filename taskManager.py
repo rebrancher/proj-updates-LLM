@@ -24,7 +24,7 @@ class TaskManager:
         tasks = self.master_db.list_master_tasks()
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Task ID", style="dim", width=8)
-        table.add_column("Master Task", style="dim", width=20)
+        table.add_column("Master Task", style="dim", width=40)
 
         for task in tasks:
             table.add_row(Align.center(str(task[0])), task[1])
