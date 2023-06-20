@@ -15,6 +15,7 @@ class CLI:
             self.task_manager.clear_screen()
             self.console.print("Task Manager\n", style="bold blue")
             self.task_manager.list_master_tasks()
+            print("\n")
             master_task_id, _ = self.task_manager.select_master_task()
 
             #self.console.print("Tasks added yesterday: ", style="bold green")
@@ -26,9 +27,8 @@ class CLI:
                 option = input("Select from the menu: ")
                 if option == '1':
                     self.task_manager.add_task_update(master_task_id)
-                    self.task_manager.add_task_update(master_task_id)
                 elif option == '2':
-                    self.task_manager.add_highlight()
+                    self.task_manager.add_highlight(master_task_id)
                 elif option == '3':
                     continue
                 else:

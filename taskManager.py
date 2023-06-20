@@ -14,8 +14,9 @@ class TaskManager:
 
     def clear_screen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
-# Master Task Code
 
+
+# Master Task Code
 
     def create_master_task(self, task_name):
         self.master_db.create_task(task_name)
@@ -32,11 +33,10 @@ class TaskManager:
         self.console.print(table)
 
     def select_master_task(self):
-        #work around this task, should you always print master tasks?
         #self.list_master_tasks()
         while True:
             try:
-                task_index = input("Please enter the number of the Master Task you want to select, press c to cancel: ")
+                task_index = input("Please enter the number of the Master Task you want to select, press c to exit: ")
                 if task_index == 'c':
                     return None, None
                 task_index = int(task_index)
@@ -66,7 +66,7 @@ class TaskManager:
 
     def select_update(self, master_task_id):
         #same problem as select master_task, should you just have the menu up every time?
-        self.list_updates(master_task_id)
+        #self.list_updates(master_task_id)
         while True:
             try:
                 task_index = input("Please enter the number of the update you want to select, press c to cancel: ")
@@ -134,8 +134,7 @@ class TaskManager:
             return
 
 #Highlights Code
-    def add_highlight(self):
-        master_task_id, _ = self.select_master_task()
+    def add_highlight(self, master_task_id):
         if master_task_id:
             index, text = self.select_update(master_task_id)
             if not index:

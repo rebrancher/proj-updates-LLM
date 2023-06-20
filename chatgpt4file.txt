@@ -2,111 +2,39 @@ from rich.console import Console
 from taskManager import TaskManager
 
 class CLI:
-    
-
     #init, starts a task_manager instance and a console class?
     def __init__(self, task_manager):
         self.task_manager = task_manager
         self.console = Console()
 
     def run_cli(self):
-
         #Main menu, should see if its worth creating a menu type object taht can just
         #take in inputs 
 
         while True:
             self.task_manager.clear_screen()
-            self.console.print("\nWelcome to the task manager, select from the menu below:\n", style="bold blue")
-            self.console.print("1. Create Master Task")
-            self.console.print("2. List Master Tasks\n")
-            self.console.print("3. Create Task Update")
-            self.console.print("4. View Task Updates\n")
-            self.console.print("5. Add Highlight to a Task")
-            self.console.print("6. View Task Highlights\n")
-            self.console.print("8. Delete Master Task")
-            self.console.print("9. Delete Task Update\n")
-            self.console.print("10. Exit\n", style="bold red")
-            choice = input("Select option by inputting corresponding #: ")
+            self.console.print("Task Manager\n", style="bold blue")
+            self.task_manager.list_master_tasks()
+            master_task_id, _ = self.task_manager.select_master_task()
 
-            #Create Master Task
-            if choice == '1':
-                self.task_manager.clear_screen()
-                print("Current Master Tasks:\n")
-                self.task_manager.list_master_tasks()
-                task_name = input("\nEnter the name of the new Master Task, press c to cancel: ")
-                #cancelling
-                if task_name == "c":
-                    continue
+            #self.console.print("Tasks added yesterday: ", style="bold green")
+            #self.console.print("Meta commands:\n ", style="bold yellow")
 
-                """
-                    This goes to the task_manager which then points to the
-                    DB function, is this the best way to go about this?
-                """
-                self.task_manager.create_master_task(task_name)
-
-            #List Master Tasks - Pretty straightforward print
-            elif choice == '2':
-                self.task_manager.clear_screen()
-                self.task_manager.list_master_tasks()
-                input("Press any key to continue...")
-                self.task_manager.clear_screen()
-
-            #Add Task Update
-            elif choice == '3':
-                """
-                    select_master_task needs better rework, it should not have
-                    list_master_tasks inside, this should be called within this
-                    choice. Additionally, the input should be passed in. We need
-                    to limit the scope of this function
-                """
-                self.task_manager.clear_screen()
-                master_task_id, _ = self.task_manager.select_master_task()
-                if master_task_id:
-                    #this one is fine, just clean it up
-                    self.task_manager.list_updates(master_task_id)
+            if master_task_id:
+                self.task_manager.list_updates(master_task_id)
+                print("\n 1) Add update \n 2) Add highlight \n 3) Exit \n")
+                option = input("Select from the menu: ")
+                if option == '1':
                     self.task_manager.add_task_update(master_task_id)
-
-            #View task updates
-            elif choice == '4':
-                master_task_id, task_name = self.task_manager.select_master_task()
-                if master_task_id:
-                    self.task_manager.list_updates(master_task_id)
-                input("Press any key to continue...")
-
-            #Add highlight to a task
-            elif choice == '5':
-                self.task_manager.add_highlight()
-
-            #View task highlights
-            elif choice == '6':
-                master_task_id, task_name = self.task_manager.select_master_task()
-                if master_task_id:
-                    self.task_manager.get_highlights(master_task_id)
-
-            #Delete Master Task
-            elif choice == '8':
-                task_id, _ = self.task_manager.select_master_task()
-                confirmation = input("Are you sure you want to delete this Master Task? y/n: ")
-                if confirmation.lower() == 'y':
-                    self.task_manager.delete_master_task(task_id)
-                else:
+                elif option == '2':
+                    self.task_manager.add_highlight(master_task_id)
+                elif option == '3':
                     continue
-            #Delete Task Update
-            elif choice == '9':
-                master_task_id, _ = self.task_manager.select_master_task()
-                if master_task_id:
-                    update_id, _ = self.task_manager.select_update(master_task_id)
-                    confirmation = input("Are you sure you want to delete this Task Update? y/n: ")
-                    if confirmation.lower() == 'y':
-                        self.task_manager.delete_task_update(update_id)
-                    else:
-                        continue
-            #exit
-            elif choice == '10':
-                print("\nExiting...\n")
-                break
+                else:
+                    print("Invalid input, please try again")
+
             else:
-                print("\nInvalid choice. Please enter a number between 1 and 10.\n")
+                break
 
 
 if __name__ == "__main__":
@@ -268,8 +196,9 @@ class TaskManager:
 
     def clear_screen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
-# Master Task Code
 
+
+# Master Task Code
 
     def create_master_task(self, task_name):
         self.master_db.create_task(task_name)
@@ -278,7 +207,7 @@ class TaskManager:
         tasks = self.master_db.list_master_tasks()
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Task ID", style="dim", width=8)
-        table.add_column("Master Task", style="dim", width=20)
+        table.add_column("Master Task", style="dim", width=40)
 
         for task in tasks:
             table.add_row(Align.center(str(task[0])), task[1])
@@ -286,11 +215,13 @@ class TaskManager:
         self.console.print(table)
 
     def select_master_task(self):
-        #work around this task, should you always print master tasks?
-        self.list_master_tasks()
+        #self.list_master_tasks()
         while True:
             try:
-                task_index = int(input("Please enter the number of the Master Task you want to select: "))
+                task_index = input("Please enter the number of the Master Task you want to select, press c to exit: ")
+                if task_index == 'c':
+                    return None, None
+                task_index = int(task_index)
                 tasks = self.master_db.list_master_tasks()
                 if 1 <= task_index <= len(tasks):
                     selected_task = tasks[task_index - 1]
@@ -304,8 +235,10 @@ class TaskManager:
 
     def add_task_update(self, master_task_id):
         
-        update_text = input("Enter your task update (max 300 chars): ")
+        update_text = input("Enter your task update (max 300 chars), press c to cancel: ")
         print("")
+        if update_text.lower() == 'c':
+            return
         self.updates_db.add_update(master_task_id, update_text, highlight=None)
         print("Update successfully added\n")
 
@@ -315,10 +248,13 @@ class TaskManager:
 
     def select_update(self, master_task_id):
         #same problem as select master_task, should you just have the menu up every time?
-        self.list_updates(master_task_id)
+        #self.list_updates(master_task_id)
         while True:
             try:
-                task_index = int(input("Please enter the number of the update you want to select: "))
+                task_index = input("Please enter the number of the update you want to select, press c to cancel: ")
+                if task_index == 'c':
+                    return None, None
+                task_index = int(task_index)
                 tasks = self.updates_db.get_updates(master_task_id)
                 if 1 <= task_index <= len(tasks):
                     selected_task = tasks[task_index - 1]
@@ -344,21 +280,22 @@ class TaskManager:
                 updates_by_date[date] = [(time, text, highlight)]
 
         table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Index", style="dim", width=6)
-        table.add_column("Date", style="dim", width=12)
-        table.add_column("Time", style="dim", width=12)
-        table.add_column("Update", style="dim", width=60)
+        table.add_column("Index", style="dim", width=6, justify="center")
+        table.add_column("Date", width=12, justify="center")
+        table.add_column("Time", style="dim", width=12, justify="center")
+        table.add_column("Update", width=60)
 
         # Display updates
         index = 1
         for date, updates_on_date in updates_by_date.items():
-            table.add_row("--", date, "--------", "--------")  # Add a row for the date
+            table.add_row("------", date, "------------", "-"*60)  # Add a row for the date
             for update in updates_on_date:
                 time, text, highlight = update
                 if highlight:
                     rich_text = Text.from_markup(f"[{highlight}]{text}[/]")
                     text = rich_text
                 table.add_row(str(index), "", time, text)
+                table.add_row("")
                 index += 1
                 
         self.console.print(table)
@@ -379,10 +316,14 @@ class TaskManager:
             return
 
 #Highlights Code
-    def add_highlight(self):
-        master_task_id, _ = self.select_master_task()
-        index, text = self.select_update(master_task_id)
-        
+    def add_highlight(self, master_task_id):
+        if master_task_id:
+            index, text = self.select_update(master_task_id)
+            if not index:
+                return
+        else:
+            return
+
         colors = [
             "black",
             "red",
@@ -399,7 +340,8 @@ class TaskManager:
             "bright_blue",
             "bright_magenta",
             "bright_cyan",
-            "bright_white"
+            "bright_white",
+            "dim"
         ]
 
         # Print all color names.
