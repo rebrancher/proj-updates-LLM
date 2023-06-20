@@ -33,7 +33,7 @@ class TaskManager:
 
     def select_master_task(self):
         #work around this task, should you always print master tasks?
-        self.list_master_tasks()
+        #self.list_master_tasks()
         while True:
             try:
                 task_index = input("Please enter the number of the Master Task you want to select, press c to cancel: ")
