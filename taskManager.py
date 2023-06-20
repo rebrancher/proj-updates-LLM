@@ -3,7 +3,6 @@ from rich.table import Table
 from rich.text import Text
 from rich.align import Align
 from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB
-import os
 
 class TaskManager:
     def __init__(self, db_name):
@@ -12,8 +11,23 @@ class TaskManager:
         self.highlights_db = TaskHighlightDB(db_name)
         self.console = Console()
 
-    def clear_screen(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
+
+
+
+    def select_from_list(self, items):
+        while True:
+            try:
+                item_index = input("Please enter the number of the item you want to select, press c to cancel: ")
+                if item_index.lower() == 'c':
+                    return None, None
+                item_index = int(item_index)
+                if 1 <= item_index <= len(items):
+                    selected_item = items[item_index - 1]
+                    return selected_item[0], selected_item[1]
+                else:
+                    print("\nInvalid selection.")
+            except ValueError:
+                print("\nInvalid input, please enter a number.")
 
 
 # Master Task Code
@@ -22,7 +36,7 @@ class TaskManager:
         self.master_db.create_task(task_name)
 
     def list_master_tasks(self):
-        tasks = self.master_db.list_master_tasks()
+        tasks = self.master_db.get_master_tasks()
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Task ID", style="dim", width=8)
         table.add_column("Master Task", style="dim", width=40)
@@ -40,7 +54,7 @@ class TaskManager:
                 if task_index == 'c':
                     return None, None
                 task_index = int(task_index)
-                tasks = self.master_db.list_master_tasks()
+                tasks = self.master_db.get_master_tasks()
                 if 1 <= task_index <= len(tasks):
                     selected_task = tasks[task_index - 1]
                     return selected_task[0], selected_task[1]

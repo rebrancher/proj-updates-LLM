@@ -1,21 +1,33 @@
 from rich.console import Console
 from taskManager import TaskManager
+from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB
 
 class CLI:
     #init, starts a task_manager instance and a console class?
-    def __init__(self, task_manager):
+    def __init__(self, task_manager, db_name):
         self.task_manager = task_manager
+        self.master_db = MasterTaskDB(db_name)
+        self.updates_db = TaskUpdateDB(db_name)
+        self.highlights_db = TaskHighlightDB(db_name)
         self.console = Console()
 
     def run_cli(self):
         #Main menu, should see if its worth creating a menu type object taht can just
-        #take in inputs 
+        #take in inputs
+        function_mapping = {
+            'list_master_tasks': self.task_manager.list_master_tasks,
+            'add_task_update': self.task_manager.add_task_update,
+            'exit_program': exit,
+            'return_to_main': None  # Assuming this is intended to just break out of the current menu
+        }
 
         while True:
             self.task_manager.clear_screen()
             self.console.print("Task Manager\n", style="bold blue")
             self.task_manager.list_master_tasks()
-            master_task_id, _ = self.task_manager.select_master_task()
+            print("\n")
+            master_tasks = self.master_db.get_master_tasks()
+            master_task_id, _ = self.task_manager.select_from_list(master_tasks)
 
             #self.console.print("Tasks added yesterday: ", style="bold green")
             #self.console.print("Meta commands:\n ", style="bold yellow")
@@ -38,8 +50,9 @@ class CLI:
 
 
 if __name__ == "__main__":
-    task_manager = TaskManager('task.db')
-    cli = CLI(task_manager)
+    db_name = 'task.db'
+    task_manager = TaskManager(db_name)
+    cli = CLI(task_manager, db_name)
     cli.run_cli()
 import sqlite3
 from datetime import datetime
@@ -71,7 +84,7 @@ class MasterTaskDB(Database):
         """, (task_name,))
         self.conn.commit()
 
-    def list_master_tasks(self):
+    def get_master_tasks(self):
         self.cursor.execute("""
             SELECT * FROM master_tasks;
         """)
@@ -198,13 +211,29 @@ class TaskManager:
         os.system('cls' if os.name == 'nt' else 'clear')
 
 
+    def select_from_list(self, items):
+        while True:
+            try:
+                item_index = input("Please enter the number of the item you want to select, press c to cancel: ")
+                if item_index.lower() == 'c':
+                    return None, None
+                item_index = int(item_index)
+                if 1 <= item_index <= len(items):
+                    selected_item = items[item_index - 1]
+                    return selected_item[0], selected_item[1]
+                else:
+                    print("\nInvalid selection.")
+            except ValueError:
+                print("\nInvalid input, please enter a number.")
+
+
 # Master Task Code
 
     def create_master_task(self, task_name):
         self.master_db.create_task(task_name)
 
     def list_master_tasks(self):
-        tasks = self.master_db.list_master_tasks()
+        tasks = self.master_db.get_master_tasks()
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Task ID", style="dim", width=8)
         table.add_column("Master Task", style="dim", width=40)
@@ -222,7 +251,7 @@ class TaskManager:
                 if task_index == 'c':
                     return None, None
                 task_index = int(task_index)
-                tasks = self.master_db.list_master_tasks()
+                tasks = self.master_db.get_master_tasks()
                 if 1 <= task_index <= len(tasks):
                     selected_task = tasks[task_index - 1]
                     return selected_task[0], selected_task[1]

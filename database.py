@@ -28,7 +28,7 @@ class MasterTaskDB(Database):
         """, (task_name,))
         self.conn.commit()
 
-    def list_master_tasks(self):
+    def get_master_tasks(self):
         self.cursor.execute("""
             SELECT * FROM master_tasks;
         """)
