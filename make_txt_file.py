@@ -7,7 +7,10 @@ with open("database.py", "r") as file:
 with open("taskManager.py", "r") as file:
     taskmanager = file.read()
 
-new_file = f"{cli}\n{database}\n{taskmanager}"
+with open("DisplayManager.py", "r") as file:
+    displaymanager = file.read()
+
+new_file = f"{cli}\n{database}\n{taskmanager}\n{displaymanager}"
 
 with open("chatgpt4file.txt", 'w') as file:
             file.write(new_file)

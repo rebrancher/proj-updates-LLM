@@ -13,12 +13,24 @@ class DisplayManager:
     def clear_screen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def display_main_menu(self):
-        menu = Table(title="Main Menu", show_header=False, header_style="bold blue")
+    def options_menu(self, options, title="Options Menu"):
+        # options: A dictionary where keys are the option numbers/letters and values are the option descriptions.
+        # title: The title to display at the top of the menu.
+
+        menu_table = Table(title=title, show_header=False, header_style="bold blue")
+        menu_table.add_column("Menu Options", justify="left", style="cyan")
+        
+        for option, description in options.items():
+            menu_table.add_row(f"{option}) {description}")
+
+        self.console.print(menu_table)
+
+    def display_updates_menu(self):
+        menu = Table(title="Updates Menu", show_header=False, header_style="bold blue")
         menu.add_column("Menu Options", justify="left", style="cyan")
         menu.add_row("1) Add Task Update")
         menu.add_row("2) Add Highlight")
-        menu.add_row("3) Exit program")
+        menu.add_row("3) Main Menu")
         self.console.print(menu)
 
     def display_master_tasks(self, master_tasks):
@@ -27,8 +39,9 @@ class DisplayManager:
         table.add_column("Task ID", style="dim", width=8)
         table.add_column("Master Task", style="dim", width=40)
 
-        for task in tasks:
-            table.add_row(Align.center(str(task[0])), task[1])
+        for i, task in enumerate(tasks, start=1):
+            table.add_row(Align.center(str(i)), task[1])
+
 
         self.console.print(table)
 
