@@ -36,6 +36,10 @@ class TaskManager:
 # Updates Code
     def add_task_update(self, master_task_id):
         while True:
+            self.display_manager.clear_screen()
+            task_updates = self.updates_db.get_updates(master_task_id)
+            self.display_manager.display_task_updates(task_updates)
+            
             # Define menu options
             options = {
                 "1": "Update text",
@@ -44,17 +48,11 @@ class TaskManager:
                 "4": "Exit update mode"
             }
 
-            # Create menu table
-            # menu_table = Table(title="Update Menu", show_header=False, header_style="bold blue")
-            # menu_table.add_column("Menu Options", justify="left", style="cyan")
-            # for option, description in options.items():
-            #     menu_table.add_row(f"{option}) {description}")
-            # self.console.print(menu_table)
             self.display_manager.options_menu(options, title="Update Menu")
 
 
             # Ask for user choice
-            selected_option = Prompt.ask("Choose an option")
+            selected_option = Prompt.ask("Choose an option: ")
 
             if selected_option == '1':
                 update_text = input("Enter your task update (max 300 chars), press 'c' to cancel: ")
@@ -70,7 +68,8 @@ class TaskManager:
                 # You need to define make_group() function
                 print("Making a group...")
             elif selected_option == '4':
-                break
+                task = self.select_from_list(task_updates)
+
 
         print("Exited update entry mode.")
 
