@@ -1,6 +1,6 @@
 from rich.console import Console
 from taskManager import TaskManager
-from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB
+from database import MasterTaskDB
 from DisplayManager import DisplayManager
 
 class CLI:
@@ -8,8 +8,6 @@ class CLI:
     def __init__(self, task_manager, db_name):
         self.task_manager = task_manager
         self.master_db = MasterTaskDB(db_name)
-        self.updates_db = TaskUpdateDB(db_name)
-        self.highlights_db = TaskHighlightDB(db_name)
         self.display_manager = DisplayManager()
         self.console = Console()
 
@@ -20,6 +18,8 @@ class CLI:
             master_tasks = self.master_db.get_master_tasks()
             self.display_manager.display_master_tasks(master_tasks)
             print("\n")
+            #function to get menu input
+            #if menu input is a number, select that task
             master_task_id, _ = self.task_manager.select_from_list(master_tasks)
 
             if master_task_id:

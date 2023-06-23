@@ -18,13 +18,24 @@ class CLI:
             master_tasks = self.master_db.get_master_tasks()
             self.display_manager.display_master_tasks(master_tasks)
             print("\n")
-            master_task_id, _ = self.task_manager.select_from_list(master_tasks)
+            #function to get menu input
+            #if menu input is a number, select that task
+            item_index = self.task_manager.master_task_menu()
+            if isinstance(item_index, int):
 
-            if master_task_id:
-                self.task_manager.add_task_update(master_task_id)
-            else:
+                master_task_id, _ = self.task_manager.select_from_list(master_tasks, item_index)
+
+                if master_task_id:
+                    self.task_manager.add_task_update(master_task_id)
+                else:
+                    break
+            elif item_index == 'c':
+                #Saving...
+
+                print("\nGoodbye!\n")
                 break
-
+            else:
+                continue
 
 if __name__ == "__main__":
     db_name = 'task.db'

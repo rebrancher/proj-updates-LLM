@@ -12,22 +12,57 @@ class TaskManager:
         self.display_manager = DisplayManager()
         self.console = Console()
 
-    def select_from_list(self, items):
+    def select_from_list(self, items, item_index):
         while True:
             try:
-                item_index = input("Please enter the number of the item you want to select, press c to cancel: ")
-                if item_index.lower() == 'c':
-                    return None, None
-                item_index = int(item_index)
                 if 1 <= item_index <= len(items):
                     selected_item = items[item_index - 1]
                     return selected_item[0], selected_item[1]
                 else:
-                    print("\nInvalid selection.")
+                    print("\nInvalid selection, out of range.")
             except ValueError:
                 print("\nInvalid input, please enter a number.")
 
-
+#Master task Menu code
+    def master_task_menu(self):
+        response = input("Enter the number of the Master Task, 'c' to cancel, or 'o' for options: ")
+        #if response is a number, return the master task id
+        #if response is 'c', return None
+        #if response is 'o', return 'o'
+        try:
+            response = int(response)
+            return response
+        except ValueError:
+            if response.lower() == 'c':
+                return 'c'
+            elif response.lower() == 'o':
+                self.master_task_options()
+            else:
+                return None
+            
+    def master_task_options(self):
+        while True:
+            self.display_manager.clear_screen()
+            options = {
+                "1": "Create a new Master Task",
+                "2": "Delete a Master Task",
+                "3": "Exit options menu"
+            }
+            self.display_manager.display_master_tasks(self.master_db.get_master_tasks())
+            self.display_manager.options_menu(options, title="Master Task Options")
+            selected_option = Prompt.ask("Choose an option: ")
+            if selected_option == '1':
+                task_name = input("Enter the name of the new Master Task: ")
+                self.create_master_task(task_name)
+            elif selected_option == '2':
+                # You need to define delete_master_task() function
+                self.delete_master_task()
+                print("Deleting a Master Task...")
+                input("Press enter to continue...")
+            elif selected_option == '3':
+                break
+            else:
+                continue
 # Master Task Code
 
     def create_master_task(self, task_name):
@@ -134,7 +169,8 @@ class TaskManager:
 
     # Function to fetch all highlights of a particular task.
     
-    def delete_master_task(self, task_id):
+    def delete_master_task(self):
+        task_id = input("Enter the number of the Master Task to delete: ")
         self.master_db.delete_task(task_id)
 
     def delete_task_update(self, update_id):
