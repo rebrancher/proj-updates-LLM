@@ -68,45 +68,53 @@ class TaskManager:
     def create_master_task(self, task_name):
         self.master_db.create_task(task_name)
 
+    def task_update_menu(self, master_task_id):
+        response = input("Enter update (300 characters max), 'c' to cancel, or 'o' for options: ")
+
+        if response.lower() == 'c':
+            return 'c'
+        elif response.lower() == 'o':
+            self.task_update_options(master_task_id)
+        else:
+            self.updates_db.add_update(master_task_id, response)
+            
+    def task_update_options(self, master_task_id):
+        options = {
+                "1": "Delete Update",
+                "2": "Add a highlight",
+                "3": "Make a group",
+                "4": "Exit update mode"
+            }
+
+        self.display_manager.options_menu(options, title="Update Menu")
+        selected_option = Prompt.ask("Choose an option: ")
+
+        if selected_option == '1':
+            # You need to define delete_update() function``
+            self.delete_task_update()
+            print("Update successfully deleted\n")
+        elif selected_option == '2':
+            # You need to define add_highlight() function
+            self.add_highlight()
+            print("Adding a highlight...")
+        elif selected_option == '3':
+            # You need to define make_group() function
+            print("Making a group...")
+        elif selected_option == '4':
+            return
+
 # Updates Code
     def add_task_update(self, master_task_id):
         while True:
             self.display_manager.clear_screen()
             task_updates = self.updates_db.get_updates(master_task_id)
             self.display_manager.display_task_updates(task_updates)
-            
-            # Define menu options
-            options = {
-                "1": "Update text",
-                "2": "Add a highlight",
-                "3": "Make a group",
-                "4": "Exit update mode"
-            }
+            update = self.task_update_menu(master_task_id)
+            if update == 'c':
+                break            
 
-            self.display_manager.options_menu(options, title="Update Menu")
-
-
-            # Ask for user choice
-            selected_option = Prompt.ask("Choose an option: ")
-
-            if selected_option == '1':
-                update_text = input("Enter your task update (max 300 chars), press 'c' to cancel: ")
-                print("")
-                if update_text.lower() == 'c':
-                    break
-                self.updates_db.add_update(master_task_id, update_text, highlight=None)
-                print("Update successfully added\n")
-            elif selected_option == '2':
-                # You need to define add_highlight() function
-                print("Adding a highlight...")
-            elif selected_option == '3':
-                # You need to define make_group() function
-                print("Making a group...")
-            elif selected_option == '4':
-                task = self.select_from_list(task_updates)
-
-
-        print("Exited update entry mode.")
+        input("Exiting update entry mode. Press enter to continue...")
+        return
 
 
     def menu_add_update(self, master_task_id):
@@ -124,14 +132,10 @@ class TaskManager:
             return
 
 #Highlights Code
-    def add_highlight(self, master_task_id):
-        if master_task_id:
-            items = self.updates_db.get_updates(master_task_id)
-            index, text = self.select_from_list(items)
-            if not index:
-                return
-        else:
-            return
+    def add_highlight(self):
+
+        index = input("Enter the number of the update you want to highlight: ")
+
 
         colors = [
             "black",
@@ -164,15 +168,20 @@ class TaskManager:
             print("Invalid color. Please try again with a valid color.")
             return
         
-        print(index, master_task_id, highlight_color)
+        print(index, highlight_color)
         self.updates_db.add_highlight_to_update(index, highlight_color)
 
     # Function to fetch all highlights of a particular task.
     
     def delete_master_task(self):
         task_id = input("Enter the number of the Master Task to delete: ")
-        self.master_db.delete_task(task_id)
+        check = input("Are you sure you want to delete this Master Task? (y/n): ")
+        if check == 'y':
+            self.master_db.delete_task(task_id)
+        else:
+            return
 
-    def delete_task_update(self, update_id):
+    def delete_task_update(self):
+        update_id = Prompt.ask("Input #id of task you want to delete")
         self.updates_db.delete_update(update_id)
 
