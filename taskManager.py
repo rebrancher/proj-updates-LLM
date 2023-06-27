@@ -23,7 +23,10 @@ class TaskManager:
             except ValueError:
                 print("\nInvalid input, please enter a number.")
 
-#Master task Menu code
+#**********************************************************************************************************************
+#****************************************** Master Task Code***********************************************************
+#**********************************************************************************************************************       
+ 
     def master_task_menu(self):
         response = input("Enter the number of the Master Task, 'c' to cancel, or 'o' for options: ")
         #if response is a number, return the master task id
@@ -55,7 +58,6 @@ class TaskManager:
                 task_name = input("Enter the name of the new Master Task: ")
                 self.create_master_task(task_name)
             elif selected_option == '2':
-                # You need to define delete_master_task() function
                 self.delete_master_task()
                 print("Deleting a Master Task...")
                 input("Press enter to continue...")
@@ -63,10 +65,27 @@ class TaskManager:
                 break
             else:
                 continue
-# Master Task Code
 
     def create_master_task(self, task_name):
         self.master_db.create_task(task_name)
+
+
+            
+#**********************************************************************************************************************
+#****************************************** Updates Code **************************************************************
+#**********************************************************************************************************************    
+
+    def add_task_update(self, master_task_id):
+        while True:
+            self.display_manager.clear_screen()
+            task_updates = self.updates_db.get_updates(master_task_id)
+            self.display_manager.display_task_updates(task_updates)
+            update = self.task_update_menu(master_task_id)
+            if update == 'c':
+                break            
+
+        input("Exiting update entry mode. Press enter to continue...")
+        return
 
     def task_update_menu(self, master_task_id):
         response = input("Enter update (300 characters max), 'c' to cancel, or 'o' for options: ")
@@ -77,13 +96,14 @@ class TaskManager:
             self.task_update_options(master_task_id)
         else:
             self.updates_db.add_update(master_task_id, response)
-            
+
     def task_update_options(self, master_task_id):
         options = {
                 "1": "Delete Update",
                 "2": "Add a highlight",
-                "3": "Make a group",
-                "4": "Exit update mode"
+                "3": "Get Update Details",
+                "4": "Make a group",
+                "5": "Exit update mode"
             }
 
         self.display_manager.options_menu(options, title="Update Menu")
@@ -99,39 +119,43 @@ class TaskManager:
             print("Adding a highlight...")
         elif selected_option == '3':
             # You need to define make_group() function
+            self.update_details(master_task_id)
             print("Making a group...")
+
         elif selected_option == '4':
+            # You need to define make_group() function
+            self.group_updates(master_task_id)
+        elif selected_option == '5':
             return
-
-# Updates Code
-    def add_task_update(self, master_task_id):
-        while True:
-            self.display_manager.clear_screen()
-            task_updates = self.updates_db.get_updates(master_task_id)
-            self.display_manager.display_task_updates(task_updates)
-            update = self.task_update_menu(master_task_id)
-            if update == 'c':
-                break            
-
-        input("Exiting update entry mode. Press enter to continue...")
-        return
-
-
-    def menu_add_update(self, master_task_id):
-        ##this part you have to figure out how to get menus out of the function codes
-        self.list_updates(master_task_id)
-        print("Options:")
-        print("1. Add new update")
-        print("2. Go back to main menu \n")
-        option = input("Choose your option: ")
-
-        if option == '1':
-            self.add_task_update(master_task_id)
-
-        elif option == '2':
+        else:
+            Prompt.ask("Invalid option. Press enter to continue...")
             return
+    
+    def update_details(self, master_task_id):
+        update_id = Prompt.ask("Enter the number of the update you want to view: ")
+        update = self.updates_db.get_update(master_task_id, update_id)
+        self.display_manager.display_update_details(master_task_id, update)
+        input("Press enter to continue...")
 
-#Highlights Code
+    def group_updates(self, master_task_id):
+        task_updates = self.updates_db.get_updates(master_task_id)
+        self.display_manager.display_task_updates(task_updates)
+        update_ids = input("Enter the ids of the updates you want to group separated by comma: ")
+        update_ids = list(map(int, update_ids.split(',')))
+        grouped_updates = []
+        for update_id in update_ids:
+            update = self.updates_db.get_update(master_task_id, update_id)
+            grouped_updates.append(update)
+        # Now we have a grouped_updates list which contains grouped updates
+        # This list can be passed to other functions as needed
+        print(grouped_updates)
+        Prompt.ask("Press enter to continue...")
+        return grouped_updates
+
+#**********************************************************************************************************************
+#****************************************** Highlights Code ***********************************************************
+#**********************************************************************************************************************
+
     def add_highlight(self):
 
         index = input("Enter the number of the update you want to highlight: ")
@@ -183,5 +207,9 @@ class TaskManager:
 
     def delete_task_update(self):
         update_id = Prompt.ask("Input #id of task you want to delete")
-        self.updates_db.delete_update(update_id)
-
+        prompt = Prompt.ask("Are you sure you want to delete this update? (y/n)")
+        if prompt == 'y':
+            self.updates_db.delete_update(update_id)
+        else:
+            Prompt.ask("Delete cancelled. Press enter to continue...")
+            return

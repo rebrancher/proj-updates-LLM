@@ -6,7 +6,7 @@ conn = sqlite3.connect('task.db')
 cursor = conn.cursor()
 
 # Execute a SELECT statement to fetch the data from the SQLite table
-cursor.execute("SELECT update_date, update_time, update_text FROM task_updates WHERE task_id = 1;")
+cursor.execute("SELECT update_date, update_time, update_text, highlight FROM task_updates WHERE task_id = 1;")
 
 # Fetch all rows from the last executed statement
 rows = cursor.fetchall()

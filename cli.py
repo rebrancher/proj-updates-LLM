@@ -14,22 +14,25 @@ class CLI:
     def run_cli(self):
 
         while True:
+            #Display Master Tasks
             self.display_manager.clear_screen()
             master_tasks = self.master_db.get_master_tasks()
             self.display_manager.display_master_tasks(master_tasks)
             print("\n")
-            #function to get menu input
-            #if menu input is a number, select that task
+            
+            #Handles master task input
             item_index = self.task_manager.master_task_menu()
             if isinstance(item_index, int):
-
+                #need to update select_list
                 master_task_id, _ = self.task_manager.select_from_list(master_tasks, item_index)
 
+                #add_task_update should be something like updates_handler?
                 if master_task_id:
                     self.task_manager.add_task_update(master_task_id)
                 else:
                     break
             elif item_index == 'c':
+                
                 #Saving...
 
                 print("\nGoodbye!\n")

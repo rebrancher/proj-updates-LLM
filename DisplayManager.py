@@ -33,6 +33,22 @@ class DisplayManager:
         menu.add_row("3) Main Menu")
         self.console.print(menu)
 
+    def display_update_details(self, master_task_id, update):
+        update_id, _, date, time, text, highlight = update
+        update_text = Text(text)
+        if highlight:
+            update_text.stylize("bold magenta")
+        else:
+            update_text.stylize("dim")
+        update_table = Table(title="Update Details", show_header=False, header_style="bold blue")
+        update_table.add_column("Update Details", justify="left", style="cyan")
+        update_table.add_row(f"Master Task ID: {master_task_id}")
+        update_table.add_row(f"Update ID: {update_id}")
+        update_table.add_row(f"Date: {date}")
+        update_table.add_row(f"Time: {time}")
+        update_table.add_row(f"Update: {update_text}")
+        self.console.print(update_table)
+
     def display_master_tasks(self, master_tasks):
         tasks = master_tasks
         table = Table(show_header=True, header_style="bold magenta")
