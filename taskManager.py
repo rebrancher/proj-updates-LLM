@@ -4,6 +4,7 @@ from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB
 from rich.prompt import Prompt
 from DisplayManager import DisplayManager
 
+
 class TaskManager:
     def __init__(self, db_name):
         self.master_db = MasterTaskDB(db_name)
@@ -88,7 +89,8 @@ class TaskManager:
         return
 
     def task_update_menu(self, master_task_id):
-        response = input("Enter update (300 characters max), 'c' to cancel, or 'o' for options: ")
+        response = input("\nEnter update (300 characters max), 'c' to cancel, or 'o' for options: \n\n")
+
 
         if response.lower() == 'c':
             return 'c'
