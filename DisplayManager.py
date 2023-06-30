@@ -101,3 +101,25 @@ class DisplayManager:
             table.add_row(str(highlight_id), highlight_text, highlight_color)
 
         self.console.print(table)
+
+    def display_groups(self, groups):
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Group ID", style="dim", width=10)
+        table.add_column("Group Name", style="dim", width=40)
+
+        for group in groups:
+            group_id, group_name = group
+            table.add_row(str(group_id), group_name)
+
+        self.console.print(table)
+
+    def display_group_updates(self, group_updates):
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Task ID", style="dim", width=10)
+        table.add_column("Task Name", style="dim", width=40)
+
+        for task in group_updates:
+            task_id, task_name = task
+            table.add_row(str(task_id), task_name)
+
+        self.console.print(table)
