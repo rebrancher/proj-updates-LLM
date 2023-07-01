@@ -247,30 +247,3 @@ class TaskManager:
         
         self.display_manager.display_task_updates(updates)
         input("Press enter to continue...")
-    
-    
-
-
-
-    # def group_updates(self, master_task_id):
-    #     task_updates = self.updates_db.get_updates(master_task_id)
-    #     self.display_manager.display_task_updates(task_updates)
-    #     update_ids = input("Enter the ids of the updates you want to group separated by comma: ")
-    #     update_ids = list(map(int, update_ids.split(',')))
-    #     grouped_updates = []
-    #     for update_id in update_ids:
-    #         update = self.updates_db.get_update(master_task_id, update_id)
-    #         grouped_updates.append(update)
-
-        # Now we have a grouped_updates list which contains grouped updates
-        # This list can be passed to other functions as needed
-        # print(grouped_updates)
-        # Prompt.ask("Press enter to continue...")
-        # return grouped_updates
-    
-    # def add_to_group(self, group_id):
-    #     self.display_manager.display_groups(self.groups_db.get_groups())
-    #     group_id = 
-        
-        #self.groups_db.add_to_group(group_id, update_id)
-        #Prompt.ask("Press enter to continue...")

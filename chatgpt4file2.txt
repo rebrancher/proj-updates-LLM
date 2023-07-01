@@ -320,7 +320,6 @@ class GroupsLinkDB(Database):
         # Commit the changes
         self.conn.commit()
         # Close the connection
-        self.conn.close()
     
     def get_links(self, group_id):
         self.cursor.execute("""
