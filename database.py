@@ -33,6 +33,12 @@ class MasterTaskDB(Database):
             SELECT * FROM master_tasks;
         """)
         return self.cursor.fetchall()
+
+    def get_master_tasks_string(self):
+        self.cursor.execute("""
+        SELECT CAST(task_id AS TEXT), task_name FROM master_tasks;
+        """)
+        return self.cursor.fetchall()
     
     def view_table(self):
         print("master_tasks")

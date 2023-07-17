@@ -8,6 +8,7 @@ from DisplayManager import DisplayManager
 
 class TaskManager:
     def __init__(self, db_name):
+        #should there be a DB class that all of these inherit from?
         self.master_db = MasterTaskDB(db_name)
         self.updates_db = TaskUpdateDB(db_name)
         self.highlights_db = TaskHighlightDB(db_name)
@@ -19,6 +20,7 @@ class TaskManager:
     def select_from_list(self, items, item_index):
         while True:
             try:
+                #should be a method to get items from the db
                 if 1 <= item_index <= len(items):
                     selected_item = items[item_index - 1]
                     return selected_item[0], selected_item[1]
@@ -40,27 +42,31 @@ class TaskManager:
             response = int(response)
             return response
         except ValueError:
-            if response.lower() == 'c':
+            if response.lower() == 'c': # should be a constant
                 return 'c'
-            elif response.lower() == 'o':
+            elif response.lower() == 'o': #should be a constant
                 self.master_task_options()
             else:
                 return None
             
     def master_task_options(self):
+
         while True:
             self.display_manager.clear_screen()
+            #should the options be a constant? yeah probably
             options = {
-                "1": "Create a new Master Task",
-                "2": "Delete a Master Task",
-                "3": "Exit options menu"
+                "1": ["Create a new Master Task", "green"],
+                "2": ["Delete a Master Task", "red"],
+                "3": ["Exit options menu", "blue"]
             }
             self.display_manager.display_master_tasks(self.master_db.get_master_tasks())
             self.display_manager.options_menu(options, title="Master Task Options")
+            #this select options needs some rework
+            #if input in options then do something
             selected_option = Prompt.ask("Choose an option: ")
             if selected_option == '1':
                 task_name = input("Enter the name of the new Master Task: ")
-                self.create_master_task(task_name)
+                self.master_db.create_task(task_name)
             elif selected_option == '2':
                 self.delete_master_task()
                 print("Deleting a Master Task...")
@@ -70,8 +76,6 @@ class TaskManager:
             else:
                 continue
 
-    def create_master_task(self, task_name):
-        self.master_db.create_task(task_name)
 
 
             
@@ -93,8 +97,6 @@ class TaskManager:
 
     def task_update_menu(self, master_task_id):
         response = input("\nEnter update (300 characters max), 'c' to cancel, or 'o' for options: \n\n")
-
-
         if response.lower() == 'c':
             return 'c'
         elif response.lower() == 'o':
@@ -104,45 +106,27 @@ class TaskManager:
 
     def task_update_options(self, master_task_id):
         options = {
-                "1": "Delete Update",
-                "2": "Add a highlight",
-                "3": "Get Update Details",
-                "4": "Create a group",
-                "5": "Add to group",
-                "6": "View updates in group",
-                "7": "Exit update mode"
+                "1": ["Delete Update", "red", self.delete_task_update],
+                "2": ["Add a highlight", "green", self.add_highlight],
+                "3": ["Get Update Details", "cyan", self.update_details],
+                "4": ["Create a group", "blue", self.create_group],
+                "5": ["Add to group", "blue", self.add_to_group],
+                "6": ["View updates in group", "blue", self.get_group_updates_with_text],
+                "7": ["Exit update mode", "yellow", None]
             }
 
         self.display_manager.options_menu(options, title="Update Menu")
-        selected_option = Prompt.ask("Choose an option: ")
+        get_num = Prompt.ask("Choose an option: ")
+        if get_num in options:
+            selected_option = options[get_num][2]
+        self.execute_task_update_option(selected_option, master_task_id)
 
-        if selected_option == '1':
-            # You need to define delete_update() function``
-            self.delete_task_update()
-            print("Update successfully deleted\n")
-        elif selected_option == '2':
-            # You need to define add_highlight() function
-            self.add_highlight()
-            print("Adding a highlight...")
-        elif selected_option == '3':
-            # You need to define make_group() function
-            self.update_details(master_task_id)
-            print("Making a group...")
+    
 
-        elif selected_option == '4':
-            # You need to define make_group() function
-            self.create_group(master_task_id)
-        elif selected_option == '5':
-            # You need to define add_to_group() function
-            self.add_to_group(master_task_id)
-            print("Adding to a group...")
-        
-        elif selected_option == '6':
-            self.get_group_updates_with_text(master_task_id)
-        elif selected_option == '7':
-            return
+    def execute_task_update_option(self, selected_option, master_task_id):
+        if selected_option:
+            selected_option(master_task_id)
         else:
-            Prompt.ask("Invalid option. Press enter to continue...")
             return
     
     def update_details(self, master_task_id):
@@ -157,7 +141,7 @@ class TaskManager:
 #****************************************** Highlights Code ***********************************************************
 #**********************************************************************************************************************
 
-    def add_highlight(self):
+    def add_highlight(self, master_task_id):
 
         index = input("Enter the number of the update you want to highlight: ")
 
@@ -171,14 +155,6 @@ class TaskManager:
             "magenta",
             "cyan",
             "white",
-            "bright_black",
-            "bright_red",
-            "bright_green",
-            "bright_yellow",
-            "bright_blue",
-            "bright_magenta",
-            "bright_cyan",
-            "bright_white",
             "dim"
         ]
 
@@ -206,7 +182,7 @@ class TaskManager:
         else:
             return
 
-    def delete_task_update(self):
+    def delete_task_update(self, master_task_id):
         update_id = Prompt.ask("Input #id of task you want to delete")
         prompt = Prompt.ask("Are you sure you want to delete this update? (y/n)")
         if prompt == 'y':

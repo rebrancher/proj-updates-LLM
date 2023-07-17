@@ -89,3 +89,9 @@ update_date,update_time,update_text,highlight
 06-30-2023,22:20:37,"5. **Restriction on single character updates:** You would need to add validation both on the frontend and the backend. On the frontend, you could use JavaScript to prevent the form from being submitted if the update is too short. On the backend, you could also include a check before the update is processed to ensure it meets the minimum length requirement. This way, even if someone bypasses the frontend validation, the backend would still catch it.",
 07-01-2023,10:00:19,"Have and ""Add to group option"" when in group view",
 07-01-2023,12:03:45,"Modulariaztion is lacking, feels like everything is a completely new process. Experimentaion is key but im not so sure you can just brainstorm things ",
+07-01-2023,14:30:18,How do i make it so that the changes are automatic from JSON updates? Changing the menus constantly is kinda dumb.................,
+07-01-2023,17:40:08,"For master tasks you should have a ""OVERVIEW"" aspect to each thing that should be OPTIONAL",
+07-01-2023,18:28:36,Remove ability for blank entries,
+07-01-2023,21:33:38,https://www.userlytics.com/user-experience-research/userlytics-competitors/userlytics-vs-usertesting/ for user testing,
+07-06-2023,11:11:52,"Add ""Justify"" to displayTable",red
+07-06-2023,11:12:01,Understand why you arent able to jump to certain functions,

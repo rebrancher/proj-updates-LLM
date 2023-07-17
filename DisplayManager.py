@@ -5,7 +5,8 @@ from rich.align import Align
 import os
 from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB
 
-
+## I think that to change this you have to make it only manage displays
+## right now there is some logic involved here, which is not good
 class DisplayManager:
     def __init__(self):
         self.console = Console()
@@ -13,7 +14,7 @@ class DisplayManager:
     def display_table(self, title, header_style, columns, data):
         table = Table(show_header=True, header_style=header_style)
         
-        for header, style, width in columns:
+        for header, style, width in columns.values():
             table.add_column(header, style=style, width=width)
 
         for row in data:
@@ -21,10 +22,15 @@ class DisplayManager:
 
         self.console.print(table)
 
-    
-
     def clear_screen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
+
+    def display_master_tasks(self, master_tasks):
+        columns = {
+            "1": ["Task_ID","dim", 10],
+            "2": ["Master Task","dim", 40]
+        }
+        self.display_table("Master Tasks", "bold magenta", columns, master_tasks)
 
     def options_menu(self, options, title="Options Menu"):
         # options: A dictionary where keys are the option numbers/letters and values are the option descriptions.
@@ -34,17 +40,10 @@ class DisplayManager:
         menu_table.add_column("Menu Options", justify="left", style="cyan")
         
         for option, description in options.items():
-            menu_table.add_row(f"{option}) {description}")
+            menu_table.add_row(f"{option}) {description[0]}", style=description[1])
 
         self.console.print(menu_table)
-
-    def display_updates_menu(self):
-        menu = Table(title="Updates Menu", show_header=False, header_style="bold blue")
-        menu.add_column("Menu Options", justify="left", style="cyan")
-        menu.add_row("1) Add Task Update")
-        menu.add_row("2) Add Highlight")
-        menu.add_row("3) Main Menu")
-        self.console.print(menu)
+    
 
     def display_update_details(self, master_task_id, update):
         update_id, _, date, time, text, highlight = update
@@ -62,17 +61,7 @@ class DisplayManager:
         update_table.add_row(f"Update: {update_text}")
         self.console.print(update_table)
 
-    def display_master_tasks(self, master_tasks):
-        tasks = master_tasks
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Task ID", style="dim", width=8)
-        table.add_column("Master Task", style="dim", width=40)
-
-        for task in tasks:
-            table.add_row(str(task[0]), task[1])
-
-
-        self.console.print(table)
+    
 
     def display_task_updates(self, task_updates):
         # Group updates by date

@@ -16,7 +16,7 @@ class CLI:
         while True:
             #Display Master Tasks
             self.display_manager.clear_screen()
-            master_tasks = self.master_db.get_master_tasks()
+            master_tasks = self.master_db.get_master_tasks_string()
             self.display_manager.display_master_tasks(master_tasks)
             print("\n")
             
@@ -32,7 +32,7 @@ class CLI:
                 else:
                     break
             elif item_index == 'c':
-                
+
                 #Saving...
 
                 print("\nGoodbye!\n")
