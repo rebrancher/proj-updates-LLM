@@ -22,27 +22,27 @@ class DisplayManager:
 
         self.console.print(table)
 
-    def clear_screen(self):
+    def clearScreen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def display_master_tasks(self, master_tasks):
+    def displayTimestreams(self, master_tasks):
         columns = {
             "1": ["Task_ID","dim", 10],
             "2": ["Master Task","dim", 40]
         }
         self.display_table("Master Tasks", "bold magenta", columns, master_tasks)
 
-    def options_menu(self, options, title="Options Menu"):
+    def optionsMenu(self, options):
         # options: A dictionary where keys are the option numbers/letters and values are the option descriptions.
         # title: The title to display at the top of the menu.
 
-        menu_table = Table(title=title, show_header=False, header_style="bold blue")
-        menu_table.add_column("Menu Options", justify="left", style="cyan")
+        menu = Table(title="Options Menu", show_header=False, header_style="bold blue")
+        menu.add_column("Menu Options", justify="left", style="cyan")
         
         for option, description in options.items():
-            menu_table.add_row(f"{option}) {description[0]}", style=description[1])
+            menu.add_row(f"{option}) {description[0]}", style=description[1])
 
-        self.console.print(menu_table)
+        self.console.print(menu)
     
 
     def display_update_details(self, master_task_id, update):
@@ -63,7 +63,7 @@ class DisplayManager:
 
     
 
-    def display_task_updates(self, task_updates):
+    def displayUpdates(self, task_updates):
         # Group updates by date
         updates_by_date = {}
         for update in task_updates:
@@ -90,6 +90,39 @@ class DisplayManager:
                 table.add_row(str(update_id), "", time, text)
                 table.add_row("")
                 
+        self.console.print(table)
+    
+    def displayUpdatesWithMasterTaskIDAndName(self, updates):
+        # Group updates by date
+        updatesByTimestream = {}
+        for update in updates:
+            update_id, timestreamID, master_name, date, time, text, highlight = update
+            if timestreamID in updatesByTimestream:
+                updatesByTimestream[timestreamID].append(update_id, timestreamID, master_name, date, time, text, highlight)
+            else:
+                updatesByTimestream[timestreamID] = [(update_id, timestreamID, master_name, date, time, text, highlight)]
+
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Index", style="dim", width=6, justify="center")
+        table.add_column("Date", width=12, justify="center")
+        table.add_column("TS ID", width=5)
+        table.add_column("TS Name", width=15)
+        # table.add_column("Date", width=12, justify="center")
+        table.add_column("Time", style="dim", width=12, justify="center")
+        table.add_column("Update", width=60)
+        
+
+        # Display updates
+        for timestreamID, updatesByTimestream in updatesByTimestream.items():
+            table.add_row("------", date, "-"*5, "-"*15, "----------"*60, "----------------------------------------")
+            for update in updatesByTimestream:
+                update_id, timestreamID, master_name, date, time, text, highlight = update
+                if highlight:
+                    rich_text = Text.from_markup(f"[{highlight}]{text}[/]")
+                    text = rich_text
+                table.add_row(str(update_id), "" , str(timestreamID), master_name, time, text)
+                table.add_row("")
+
         self.console.print(table)
 
     def display_highlights(self, task_highlights):

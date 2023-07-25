@@ -1,5 +1,7 @@
 import sqlite3
 from datetime import datetime
+from datetime import date
+from datetime import timedelta
 
 class Database:
     def __init__(self, db_name):
@@ -21,6 +23,17 @@ class MasterTaskDB(Database):
                 task_name TEXT NOT NULL
             );
         """)
+    
+    def getTimestream(self, timestreamID):
+        self.cursor.execute("""
+            SELECT * FROM master_tasks WHERE task_id = ?;
+        """, (timestreamID,))
+    
+    def getTimestreamName(self, timestreamID):
+        self.cursor.execute("""
+            SELECT task_name FROM master_tasks WHERE task_id = ?;
+        """, (timestreamID,))
+        return self.cursor.fetchone()[0]
 
     def create_task(self, task_name):
         self.cursor.execute("""
@@ -34,7 +47,7 @@ class MasterTaskDB(Database):
         """)
         return self.cursor.fetchall()
 
-    def get_master_tasks_string(self):
+    def getAllTimestreams(self):
         self.cursor.execute("""
         SELECT CAST(task_id AS TEXT), task_name FROM master_tasks;
         """)
@@ -78,13 +91,47 @@ class TaskUpdateDB(Database):
         self.conn.commit()
 
     #change this to list_updates
-    def get_updates(self, master_task_id):
+    def getUpdates(self, master_task_id):
         self.cursor.execute("""
             SELECT update_id, task_id, update_date, update_time, update_text, highlight FROM task_updates 
             WHERE task_id = ? 
             ORDER BY update_date ASC, update_time ASC;
         """, (master_task_id,))
         return self.cursor.fetchall()
+
+    #write function to get updates from yesterday 12:01am to now
+    def getUpdatesSinceYesterdayMidnight(self, master_task_id):
+        yesterday_date_str = (datetime.now() - timedelta(days=1)).strftime("%m-%d-%Y")
+        self.cursor.execute("""
+            SELECT update_id, task_id, update_date, update_time, update_text, highlight FROM task_updates 
+            WHERE task_id = ? AND update_date >= ? 
+            ORDER BY update_date ASC, update_time ASC;
+        """, (master_task_id, yesterday_date_str))
+        return self.cursor.fetchall() 
+    
+    def getAllUpdatesSinceYesterdayMidnight(self):
+        yesterday_date_str = (datetime.now() - timedelta(days=1)).strftime("%m-%d-%Y")
+        self.cursor.execute("""
+            SELECT update_id, task_id, update_date, update_time, update_text, highlight FROM task_updates
+            WHERE update_date >= ?
+            ORDER BY update_date ASC, update_time ASC;
+        """, (yesterday_date_str,))
+        return self.cursor.fetchall()
+
+    def getAllUpdatesSinceYesterdayMidnightJoinMasterDBName(self):
+        yesterday_date_str = (datetime.now() - timedelta(days=1)).strftime("%m-%d-%Y")
+        self.cursor.execute("""
+            SELECT task_updates.update_id, task_updates.task_id, master_tasks.task_name, task_updates.update_date, task_updates.update_time, task_updates.update_text, task_updates.highlight FROM task_updates
+            JOIN master_tasks ON task_updates.task_id = master_tasks.task_id
+            WHERE update_date >= ?
+            ORDER BY update_date ASC, update_time ASC;
+        """, (yesterday_date_str,))
+        return self.cursor.fetchall()
+    
+
+
+
+
     
     def get_update(self, master_task_id, update_id):
         self.cursor.execute("""

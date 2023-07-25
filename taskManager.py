@@ -4,7 +4,7 @@ from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB, GroupsLinkDB, 
 from rich.prompt import Prompt
 from DisplayManager import DisplayManager
 
-
+#just put on your backpack and go
 
 class TaskManager:
     def __init__(self, db_name):
@@ -14,98 +14,61 @@ class TaskManager:
         self.highlights_db = TaskHighlightDB(db_name)
         self.groups_db = GroupsDB(db_name)
         self.groupsLink_db = GroupsLinkDB(db_name)
-        self.display_manager = DisplayManager()
+        self.displayManager = DisplayManager()
         self.console = Console()
-
-    def select_from_list(self, items, item_index):
-        while True:
-            try:
-                #should be a method to get items from the db
-                if 1 <= item_index <= len(items):
-                    selected_item = items[item_index - 1]
-                    return selected_item[0], selected_item[1]
-                else:
-                    print("\nInvalid selection, out of range.")
-            except ValueError:
-                print("\nInvalid input, please enter a number.")
-
-#**********************************************************************************************************************
-#****************************************** Master Task Code***********************************************************
-#**********************************************************************************************************************       
  
-    def master_task_menu(self):
-        response = input("Enter the number of the Master Task, 'c' to cancel, or 'o' for options: ")
-        #if response is a number, return the master task id
-        #if response is 'c', return None
-        #if response is 'o', return 'o'
-        try:
-            response = int(response)
-            return response
-        except ValueError:
-            if response.lower() == 'c': # should be a constant
-                return 'c'
-            elif response.lower() == 'o': #should be a constant
-                self.master_task_options()
-            else:
-                return None
-            
-    def master_task_options(self):
-
-        while True:
-            self.display_manager.clear_screen()
-            #should the options be a constant? yeah probably
-            options = {
-                "1": ["Create a new Master Task", "green"],
-                "2": ["Delete a Master Task", "red"],
-                "3": ["Exit options menu", "blue"]
-            }
-            self.display_manager.display_master_tasks(self.master_db.get_master_tasks())
-            self.display_manager.options_menu(options, title="Master Task Options")
-            #this select options needs some rework
-            #if input in options then do something
-            selected_option = Prompt.ask("Choose an option: ")
-            if selected_option == '1':
-                task_name = input("Enter the name of the new Master Task: ")
-                self.master_db.create_task(task_name)
-            elif selected_option == '2':
-                self.delete_master_task()
-                print("Deleting a Master Task...")
-                input("Press enter to continue...")
-            elif selected_option == '3':
-                break
-            else:
-                continue
-
-
-
+    def timestreamOptions(self):
+        options = {
+            "1": ["Create a new Master Task", "green"],
+            "2": ["Delete a Master Task", "red"],
+            "3": ["Exit options menu", "blue"]
+        }
+        self.displayManager.optionsMenu(options)
+        #this select options needs some rework
+        #if input in options then do something
+        selectedOption = Prompt.ask("Choose an option: ")
+        if selectedOption == '1':
+            task_name = input("Enter the name of the new Master Task: ")
+            self.master_db.create_task(task_name)
+        elif selectedOption == '2':
+            self.delete_master_task()
+            print("Deleted a Master Task")
+        elif selectedOption == '3':
+            return
+        else:
+            print("Invalid input, please try again. Going back to main menu")
+            return
             
 #**********************************************************************************************************************
 #****************************************** Updates Code **************************************************************
 #**********************************************************************************************************************    
 
-    def add_task_update(self, master_task_id):
-        while True:
-            self.display_manager.clear_screen()
-            task_updates = self.updates_db.get_updates(master_task_id)
-            self.display_manager.display_task_updates(task_updates)
-            update = self.task_update_menu(master_task_id)
-            if update == 'c':
-                break            
+    def updatePromptAndProcess(self, timestreamID):
+        responseIsNotCancel = True
+        while responseIsNotCancel:
+            self.viewUpdates(timestreamID)
+            responseIsNotCancel = self.processUpdate(timestreamID)
+            
 
-        input("Exiting update entry mode. Press enter to continue...")
-        return
-
-    def task_update_menu(self, master_task_id):
-        response = input("\nEnter update (300 characters max), 'c' to cancel, or 'o' for options: \n\n")
-        if response.lower() == 'c':
-            return 'c'
-        elif response.lower() == 'o':
-            self.task_update_options(master_task_id)
+    def viewUpdates(self, timestreamID):
+        self.displayManager.clearScreen()
+        self.displayManager.displayUpdates(self.updates_db.getUpdates(timestreamID))
+        print(self.master_db.getTimestreamName(timestreamID))
+    
+    def processUpdate(self, timestreamID):
+        update = input("\nEnter update (300 characters max), 'c' to cancel, or 'o' for options: \n\n")
+        if update.lower() == 'c':
+            return False
+        elif update.lower() == 'o':
+            self.updateOptions(timestreamID)
         else:
-            self.updates_db.add_update(master_task_id, response)
+            self.updates_db.add_update(timestreamID, update)
+        return True
+    
 
-    def task_update_options(self, master_task_id):
-        options = {
+    def updateOptions(self, timestreamID):
+        #how do you access the methods in OOP? 
+        updateOptionsMenuChoices = {
                 "1": ["Delete Update", "red", self.delete_task_update],
                 "2": ["Add a highlight", "green", self.add_highlight],
                 "3": ["Get Update Details", "cyan", self.update_details],
@@ -115,11 +78,11 @@ class TaskManager:
                 "7": ["Exit update mode", "yellow", None]
             }
 
-        self.display_manager.options_menu(options, title="Update Menu")
+        self.displayManager.optionsMenu(updateOptionsMenuChoices)
         get_num = Prompt.ask("Choose an option: ")
-        if get_num in options:
-            selected_option = options[get_num][2]
-        self.execute_task_update_option(selected_option, master_task_id)
+        if get_num in updateOptionsMenuChoices:
+            selected_option = updateOptionsMenuChoices[get_num][2]
+        self.execute_task_update_option(selected_option, timestreamID)
 
     
 
@@ -132,7 +95,7 @@ class TaskManager:
     def update_details(self, master_task_id):
         update_id = Prompt.ask("Enter the number of the update you want to view: ")
         update = self.updates_db.get_update(master_task_id, update_id)
-        self.display_manager.display_update_details(master_task_id, update)
+        self.displayManager.display_update_details(master_task_id, update)
         input("Press enter to continue...")
 
     
@@ -207,7 +170,7 @@ class TaskManager:
     
     def get_group_id(self, master_task_id):
         groups = self.groups_db.get_groups(master_task_id)
-        self.display_manager.display_groups(groups)
+        self.displayManager.display_groups(groups)
         group_id = input("Enter the number of the group you want to select: ")
         return group_id
     
@@ -221,5 +184,5 @@ class TaskManager:
         updates = self.groupsLink_db.get_updates_from_links(group_id)
         print(updates)
         
-        self.display_manager.display_task_updates(updates)
+        self.displayManager.display_task_updates(updates)
         input("Press enter to continue...")

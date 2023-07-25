@@ -1,44 +1,54 @@
 from rich.console import Console
 from taskManager import TaskManager
-from database import MasterTaskDB
+from database import MasterTaskDB, TaskUpdateDB
 from DisplayManager import DisplayManager
 
 class CLI:
     #init, starts a task_manager instance and a console class?
     def __init__(self, task_manager, db_name):
-        self.task_manager = task_manager
-        self.master_db = MasterTaskDB(db_name)
-        self.display_manager = DisplayManager()
+        self.taskManager = task_manager
+        self.masterDB = MasterTaskDB(db_name)
+        self.updatesDB = TaskUpdateDB(db_name)
+        self.displayManager = DisplayManager()
         self.console = Console()
 
     def run_cli(self):
-
         while True:
-            #Display Master Tasks
-            self.display_manager.clear_screen()
-            master_tasks = self.master_db.get_master_tasks_string()
-            self.display_manager.display_master_tasks(master_tasks)
-            print("\n")
+            timestreams = self.displayAndReturnTimestreams()
             
-            #Handles master task input
-            item_index = self.task_manager.master_task_menu()
-            if isinstance(item_index, int):
-                #need to update select_list
-                master_task_id, _ = self.task_manager.select_from_list(master_tasks, item_index)
+            self.getAndProcessInputCli(timestreams)
 
-                #add_task_update should be something like updates_handler?
-                if master_task_id:
-                    self.task_manager.add_task_update(master_task_id)
-                else:
-                    break
-            elif item_index == 'c':
+    def displayAndReturnTimestreams(self):
+        self.displayManager.clearScreen()
+        timestreams = self.masterDB.getAllTimestreams()
+        self.displayManager.displayTimestreams(timestreams)
+        print("\n")
+        return timestreams
 
-                #Saving...
-
-                print("\nGoodbye!\n")
-                break
-            else:
-                continue
+    def getAndProcessInputCli(self, timestreams):
+        timestreamID = input("Enter the ID of the Timestream, 'c' to cancel, or 'o' for options, 'y' for yesterdays updates: ")
+        if timestreamID.isdigit():
+            try:
+                #this is more of an update menu type thing?
+                self.taskManager.updatePromptAndProcess(timestreamID)
+            except TypeError as e:
+                print(e)
+                input("\nInvalid input, please try again. Press enter to continue.")
+                return
+                
+        elif timestreamID.lower() == 'c':
+            print("Exiting...")
+            exit()  
+        elif timestreamID.lower() == 'o':
+            self.taskManager.timestreamOptions()
+        elif timestreamID.lower() == 'y':
+            yesterdaysUpdates = self.updatesDB.getAllUpdatesSinceYesterdayMidnightJoinMasterDBName()
+            self.displayManager.displayUpdatesWithMasterTaskIDAndName(yesterdaysUpdates)
+            input("\nPress enter to continue.")
+        
+        else:
+            input("\nInvalid input, please try again. Press enter to continue.")
+            return
 
 if __name__ == "__main__":
     db_name = 'task.db'
