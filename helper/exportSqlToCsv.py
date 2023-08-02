@@ -1,8 +1,14 @@
 import sqlite3
 import csv
+from pathlib import Path
 
+
+path = Path(__file__).parent.parent
+path = str(path) + "/task.db"
+print("PATH")
+print(path)
 # Connect to the SQLite database
-conn = sqlite3.connect('task.db')
+conn = sqlite3.connect(str(path))
 cursor = conn.cursor()
 
 # Execute a SELECT statement to fetch the data from the SQLite table
