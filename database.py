@@ -139,6 +139,13 @@ class TaskUpdateDB(Database):
             WHERE task_id = ? AND update_id = ?;
         """, (master_task_id, update_id))
         return self.cursor.fetchone()
+
+    def get_udpate_no_master(self, update_id):
+        self.cursor.execute("""
+            SELECT update_id, task_id, update_date, update_time, update_text, highlight FROM task_updates 
+            WHERE update_id = ?;
+        """, (update_id,))
+        return self.cursor.fetchone()
     
     def add_highlight_to_update(self, task_id, highlight):
         self.cursor.execute("""

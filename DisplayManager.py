@@ -1,5 +1,5 @@
 from rich.console import Console
-from rich.table import Table
+from rich.table import Table, Column
 from rich.text import Text
 from rich.align import Align
 import os
@@ -10,6 +10,31 @@ from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB
 class DisplayManager:
     def __init__(self):
         self.console = Console()
+        self.master_db = MasterTaskDB("task.db")
+
+    def displayTable(self, **kwargs):
+        tableTitle = kwargs["tableTitle"]
+        tableHeaderStyle = kwargs["tableHeaderStyle"]
+        columns = kwargs["columns"]
+        data = kwargs["data"]
+        table = Table(title=tableTitle, show_header=True, header_style=tableHeaderStyle)
+
+        for colInfo in columns:
+            table.add_column(header=colInfo["header"], style=colInfo["style"], width=colInfo["width"])
+        
+        for row in data:
+            table.add_row(*row)
+
+        self.console.print(table)
+        print("\n")
+
+    def displayTimestreams1(self):
+        timestreams = self.master_db.getAllTimestreams()
+        columns = [
+            {"header": "ID", "style": "dim", "width": 10}, 
+            {"header": "Timestreams", "style": "dim", "width": 40}
+            ]
+        self.displayTable(tableTitle="Timestreams", tableHeaderStyle="bold magenta", columns=columns, data=timestreams)
 
     def display_table(self, title, header_style, columns, data):
         table = Table(show_header=True, header_style=header_style)
@@ -25,23 +50,13 @@ class DisplayManager:
     def clearScreen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def displayTimestreams(self, master_tasks):
-        columns = {
-            "1": ["Task_ID","dim", 10],
-            "2": ["Master Task","dim", 40]
-        }
-        self.display_table("Master Tasks", "bold magenta", columns, master_tasks)
 
     def optionsMenu(self, options):
-        # options: A dictionary where keys are the option numbers/letters and values are the option descriptions.
-        # title: The title to display at the top of the menu.
-
         menu = Table(title="Options Menu", show_header=False, header_style="bold blue")
         menu.add_column("Menu Options", justify="left", style="cyan")
         
         for option, description in options.items():
             menu.add_row(f"{option}) {description[0]}", style=description[1])
-
         self.console.print(menu)
     
 
@@ -98,7 +113,7 @@ class DisplayManager:
         for update in updates:
             update_id, timestreamID, master_name, date, time, text, highlight = update
             if timestreamID in updatesByTimestream:
-                updatesByTimestream[timestreamID].append(update_id, timestreamID, master_name, date, time, text, highlight)
+                updatesByTimestream[timestreamID].append([update_id, timestreamID, master_name, date, time, text, highlight])
             else:
                 updatesByTimestream[timestreamID] = [(update_id, timestreamID, master_name, date, time, text, highlight)]
 
@@ -107,7 +122,6 @@ class DisplayManager:
         table.add_column("Date", width=12, justify="center")
         table.add_column("TS ID", width=5)
         table.add_column("TS Name", width=15)
-        # table.add_column("Date", width=12, justify="center")
         table.add_column("Time", style="dim", width=12, justify="center")
         table.add_column("Update", width=60)
         

@@ -15,17 +15,11 @@ class CLI:
 
     def run_cli(self):
         while True:
-            timestreams = self.displayAndReturnTimestreams()
-            self.getAndProcessInputCli(timestreams)
+            self.displayManager.clearScreen()
+            self.displayManager.displayTimestreams1()
+            self.getAndProcessInputCli()
 
-    def displayAndReturnTimestreams(self):
-        self.displayManager.clearScreen()
-        timestreams = self.masterDB.getAllTimestreams()
-        self.displayManager.displayTimestreams(timestreams)
-        print("\n")
-        return timestreams
-
-    def getAndProcessInputCli(self, timestreams):
+    def getAndProcessInputCli(self):
         timestreamID = input("Enter the ID of the Timestream, 'c' to cancel, or 'o' for options, 'y' for yesterdays updates: ")
         if timestreamID.isdigit():
             try:
@@ -142,8 +136,6 @@ class TaskManager:
             selected_option = updateOptionsMenuChoices[get_num][2]
         self.execute_task_update_option(selected_option, timestreamID)
 
-    
-
     def execute_task_update_option(self, selected_option, master_task_id):
         if selected_option:
             selected_option(master_task_id)
@@ -163,10 +155,7 @@ class TaskManager:
 #**********************************************************************************************************************
 
     def add_highlight(self, master_task_id):
-
         index = input("Enter the number of the update you want to highlight: ")
-
-
         colors = [
             "black",
             "red",
@@ -179,7 +168,6 @@ class TaskManager:
             "dim"
         ]
 
-        # Print all color names.
         print("\nPossible colors for highlighting are:")
         for color in colors:
             print(color)
@@ -246,7 +234,7 @@ class TaskManager:
         input("Press enter to continue...")
 displaymanager.py
 from rich.console import Console
-from rich.table import Table
+from rich.table import Table, Column
 from rich.text import Text
 from rich.align import Align
 import os
@@ -257,6 +245,31 @@ from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB
 class DisplayManager:
     def __init__(self):
         self.console = Console()
+        self.master_db = MasterTaskDB("task.db")
+
+    def displayTable(self, **kwargs):
+        tableTitle = kwargs["tableTitle"]
+        tableHeaderStyle = kwargs["tableHeaderStyle"]
+        columns = kwargs["columns"]
+        data = kwargs["data"]
+        table = Table(title=tableTitle, show_header=True, header_style=tableHeaderStyle)
+
+        for colInfo in columns:
+            print(colInfo)
+            table.add_column(header=colInfo["header"], style=colInfo["style"], width=colInfo["width"])
+        
+        for row in data:
+            table.add_row(*row)
+
+        self.console.print(table)
+
+    def displayTimestreams1(self):
+        timestreams = self.master_db.getAllTimestreams()
+        columns = [
+            {"header": "Task_ID", "style": "dim", "width": 10}, 
+            {"header": "Master Task", "style": "dim", "width": 40}
+            ]
+        self.displayTable(tableTitle="Timestreams", tableHeaderStyle="bold magenta", columns=columns, data=timestreams)
 
     def display_table(self, title, header_style, columns, data):
         table = Table(show_header=True, header_style=header_style)
@@ -272,23 +285,13 @@ class DisplayManager:
     def clearScreen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def displayTimestreams(self, master_tasks):
-        columns = {
-            "1": ["Task_ID","dim", 10],
-            "2": ["Master Task","dim", 40]
-        }
-        self.display_table("Master Tasks", "bold magenta", columns, master_tasks)
 
     def optionsMenu(self, options):
-        # options: A dictionary where keys are the option numbers/letters and values are the option descriptions.
-        # title: The title to display at the top of the menu.
-
         menu = Table(title="Options Menu", show_header=False, header_style="bold blue")
         menu.add_column("Menu Options", justify="left", style="cyan")
         
         for option, description in options.items():
             menu.add_row(f"{option}) {description[0]}", style=description[1])
-
         self.console.print(menu)
     
 

@@ -14,18 +14,11 @@ class CLI:
 
     def run_cli(self):
         while True:
-            timestreams = self.displayAndReturnTimestreams()
-            
-            self.getAndProcessInputCli(timestreams)
+            self.displayManager.clearScreen()
+            self.displayManager.displayTimestreams1()
+            self.getAndProcessInputCli()
 
-    def displayAndReturnTimestreams(self):
-        self.displayManager.clearScreen()
-        timestreams = self.masterDB.getAllTimestreams()
-        self.displayManager.displayTimestreams(timestreams)
-        print("\n")
-        return timestreams
-
-    def getAndProcessInputCli(self, timestreams):
+    def getAndProcessInputCli(self):
         timestreamID = input("Enter the ID of the Timestream, 'c' to cancel, or 'o' for options, 'y' for yesterdays updates: ")
         if timestreamID.isdigit():
             try:

@@ -56,11 +56,17 @@ class TaskManager:
         print(self.master_db.getTimestreamName(timestreamID))
     
     def processUpdate(self, timestreamID):
-        update = input("\nEnter update (300 characters max), 'c' to cancel, or 'o' for options: \n\n")
+        update = input("\nEnter update, 'c' to cancel, 'o' for options, or 'd' for dim mode: \n\n")
         if update.lower() == 'c':
             return False
         elif update.lower() == 'o':
             self.updateOptions(timestreamID)
+        elif update.lower() == 'd':
+            print ("Entering Dim mode")
+            updateID = input("\nEnter the ID of the update you want to DIM: ")
+            update = self.updates_db.get_udpate_no_master(updateID)
+            print(update)
+            self.updates_db.add_highlight_to_update(updateID, "dim")
         else:
             self.updates_db.add_update(timestreamID, update)
         return True
@@ -84,8 +90,6 @@ class TaskManager:
             selected_option = updateOptionsMenuChoices[get_num][2]
         self.execute_task_update_option(selected_option, timestreamID)
 
-    
-
     def execute_task_update_option(self, selected_option, master_task_id):
         if selected_option:
             selected_option(master_task_id)
@@ -105,10 +109,7 @@ class TaskManager:
 #**********************************************************************************************************************
 
     def add_highlight(self, master_task_id):
-
         index = input("Enter the number of the update you want to highlight: ")
-
-
         colors = [
             "black",
             "red",
@@ -121,7 +122,6 @@ class TaskManager:
             "dim"
         ]
 
-        # Print all color names.
         print("\nPossible colors for highlighting are:")
         for color in colors:
             print(color)
