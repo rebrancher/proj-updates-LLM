@@ -1,8 +1,8 @@
 from rich.console import Console
 from rich.table import Table
-from database import MasterTaskDB, TaskUpdateDB, TaskHighlightDB, GroupsLinkDB, GroupsDB 
-from rich.prompt import Prompt
+from database import MasterTaskDB, TaskUpdateDB
 from DisplayManager import DisplayManager
+from updatesManager import UpdatesManager
 
 #just put on your backpack and go
 
@@ -11,11 +11,9 @@ class TaskManager:
         #should there be a DB class that all of these inherit from?
         self.master_db = MasterTaskDB(db_name)
         self.updates_db = TaskUpdateDB(db_name)
-        self.highlights_db = TaskHighlightDB(db_name)
-        self.groups_db = GroupsDB(db_name)
-        self.groupsLink_db = GroupsLinkDB(db_name)
         self.displayManager = DisplayManager()
         self.console = Console()
+        self.updatesManager = UpdatesManager()
  
     def timestreamOptions(self):
         options = {
@@ -38,104 +36,6 @@ class TaskManager:
         else:
             print("Invalid input, please try again. Going back to main menu")
             return
-            
-#**********************************************************************************************************************
-#****************************************** Updates Code **************************************************************
-#**********************************************************************************************************************    
-
-    def updatePromptAndProcess(self, timestreamID):
-        responseIsNotCancel = True
-        while responseIsNotCancel:
-            self.viewUpdates(timestreamID)
-            responseIsNotCancel = self.processUpdate(timestreamID)
-            
-
-    def viewUpdates(self, timestreamID):
-        self.displayManager.clearScreen()
-        self.displayManager.displayUpdates(self.updates_db.getUpdates(timestreamID))
-        print(self.master_db.getTimestreamName(timestreamID))
-    
-    def processUpdate(self, timestreamID):
-        update = input("\nEnter update, 'c' to cancel, 'o' for options, or 'd' for dim mode: \n\n")
-        if update.lower() == 'c':
-            return False
-        elif update.lower() == 'o':
-            self.updateOptions(timestreamID)
-        elif update.lower() == 'd':
-            print ("Entering Dim mode")
-            updateID = input("\nEnter the ID of the update you want to DIM: ")
-            update = self.updates_db.get_udpate_no_master(updateID)
-            print(update)
-            self.updates_db.add_highlight_to_update(updateID, "dim")
-        else:
-            self.updates_db.add_update(timestreamID, update)
-        return True
-    
-
-    def updateOptions(self, timestreamID):
-        #how do you access the methods in OOP? 
-        updateOptionsMenuChoices = {
-                "1": ["Delete Update", "red", self.delete_task_update],
-                "2": ["Add a highlight", "green", self.add_highlight],
-                "3": ["Get Update Details", "cyan", self.update_details],
-                "4": ["Create a group", "blue", self.create_group],
-                "5": ["Add to group", "blue", self.add_to_group],
-                "6": ["View updates in group", "blue", self.get_group_updates_with_text],
-                "7": ["Exit update mode", "yellow", None]
-            }
-
-        self.displayManager.optionsMenu(updateOptionsMenuChoices)
-        get_num = Prompt.ask("Choose an option: ")
-        if get_num in updateOptionsMenuChoices:
-            selected_option = updateOptionsMenuChoices[get_num][2]
-        self.execute_task_update_option(selected_option, timestreamID)
-
-    def execute_task_update_option(self, selected_option, master_task_id):
-        if selected_option:
-            selected_option(master_task_id)
-        else:
-            return
-    
-    def update_details(self, master_task_id):
-        update_id = Prompt.ask("Enter the number of the update you want to view: ")
-        update = self.updates_db.get_update(master_task_id, update_id)
-        self.displayManager.display_update_details(master_task_id, update)
-        input("Press enter to continue...")
-
-    
-
-#**********************************************************************************************************************
-#****************************************** Highlights Code ***********************************************************
-#**********************************************************************************************************************
-
-    def add_highlight(self, master_task_id):
-        index = input("Enter the number of the update you want to highlight: ")
-        colors = [
-            "black",
-            "red",
-            "green",
-            "yellow",
-            "blue",
-            "magenta",
-            "cyan",
-            "white",
-            "dim"
-        ]
-
-        print("\nPossible colors for highlighting are:")
-        for color in colors:
-            print(color)
-        
-        highlight_color = input("\nEnter the color for your highlight: ")
-        
-        if highlight_color not in colors:
-            print("Invalid color. Please try again with a valid color.")
-            return
-        
-        print(index, highlight_color)
-        self.updates_db.add_highlight_to_update(index, highlight_color)
-
-    # Function to fetch all highlights of a particular task.
     
     def delete_master_task(self):
         task_id = input("Enter the number of the Master Task to delete: ")
@@ -145,44 +45,6 @@ class TaskManager:
         else:
             return
 
-    def delete_task_update(self, master_task_id):
-        update_id = Prompt.ask("Input #id of task you want to delete")
-        prompt = Prompt.ask("Are you sure you want to delete this update? (y/n)")
-        if prompt == 'y':
-            self.updates_db.delete_update(update_id)
-        else:
-            Prompt.ask("Delete cancelled. Press enter to continue...")
-            return
-
-
-#**********************************************************************************************************************
-#****************************************** Links Code ***********************************************************
-#**********************************************************************************************************************
-
-
-#**********************************************************************************************************************
-#****************************************** Groups Code ***********************************************************
-#**********************************************************************************************************************
-
-    def create_group(self, master_task_id):
-        group_name = input("Enter the name of the new group: ")
-        self.groups_db.create_group(master_task_id, group_name)
     
-    def get_group_id(self, master_task_id):
-        groups = self.groups_db.get_groups(master_task_id)
-        self.displayManager.display_groups(groups)
-        group_id = input("Enter the number of the group you want to select: ")
-        return group_id
     
-    def add_to_group(self, master_task_id):
-        group_id = self.get_group_id(master_task_id)
-        update_id = input("Enter the number of the update you want to add to the group: ")
-        self.groupsLink_db.create_link(update_id, group_id)
 
-    def get_group_updates_with_text(self, master_task_id):
-        group_id = self.get_group_id(master_task_id)
-        updates = self.groupsLink_db.get_updates_from_links(group_id)
-        print(updates)
-        
-        self.displayManager.display_task_updates(updates)
-        input("Press enter to continue...")

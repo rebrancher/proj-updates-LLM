@@ -98,6 +98,23 @@ class TaskUpdateDB(Database):
             ORDER BY update_date ASC, update_time ASC;
         """, (master_task_id,))
         return self.cursor.fetchall()
+    
+    def getUpdatesJoinMaster(self, master_task_id):
+        self.cursor.execute("""
+            SELECT task_updates.update_id, task_updates.task_id, task_updates.update_date, task_updates.update_time, task_updates.update_text, task_updates.highlight, master_tasks.task_name FROM task_updates
+            JOIN master_tasks ON task_updates.task_id = master_tasks.task_id
+            WHERE task_updates.task_id = ?
+            ORDER BY update_date ASC, update_time ASC;
+        """, (master_task_id,))
+        return self.cursor.fetchall()
+    
+    def getUpdatesJoinGroupsLinkDB(self):
+        self.cursor.execute("""
+            SELECT task_updates.update_id, task_updates.task_id, task_updates.update_date, task_updates.update_time, task_updates.update_text, task_updates.highlight, task_update_links.group_id FROM task_updates
+            JOIN task_updates_link ON task_updates.task_id = task_updates_link.update_id
+            ORDER BY update_date ASC, update_time ASC;
+        """)
+        return self.cursor.fetchall()
 
     #write function to get updates from yesterday 12:01am to now
     def getUpdatesSinceYesterdayMidnight(self, master_task_id):
@@ -127,20 +144,15 @@ class TaskUpdateDB(Database):
             ORDER BY update_date ASC, update_time ASC;
         """, (yesterday_date_str,))
         return self.cursor.fetchall()
-    
-
-
-
-
-    
-    def get_update(self, master_task_id, update_id):
+        
+    def getUpdateAndMaster(self, master_task_id, update_id):
         self.cursor.execute("""
             SELECT update_id, task_id, update_date, update_time, update_text, highlight FROM task_updates 
             WHERE task_id = ? AND update_id = ?;
         """, (master_task_id, update_id))
         return self.cursor.fetchone()
 
-    def get_udpate_no_master(self, update_id):
+    def getUpdate(self, update_id):
         self.cursor.execute("""
             SELECT update_id, task_id, update_date, update_time, update_text, highlight FROM task_updates 
             WHERE update_id = ?;
